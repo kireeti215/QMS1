@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HALSAA Demo</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f5f7fa;
+margin:0;
+text-align:center;
+}
+
+nav{
+display:flex;
+justify-content:space-between;
+background:#2b7fff;
+color:white;
+padding:15px;
+}
+
+nav ul{
+display:flex;
+gap:20px;
+list-style:none;
+}
+
+nav a{
+color:white;
+text-decoration:none;
+}
+
+.hero{
+padding:60px;
+}
+
+.btn{
+background:#2b7fff;
+color:white;
+padding:12px 20px;
+border-radius:6px;
+text-decoration:none;
+}
+
+.cards{
+display:flex;
+justify-content:center;
+gap:20px;
+margin-top:30px;
+}
+
+.card{
+background:white;
+padding:20px;
+width:260px;
+border-radius:10px;
+box-shadow:0 3px 8px rgba(0,0,0,0.1);
+}
+
+button{
+background:#2b7fff;
+color:white;
+border:none;
+padding:10px 18px;
+border-radius:6px;
+cursor:pointer;
+}
+
+input,select{
+padding:10px;
+width:200px;
+}
+
+.queue{
+margin-top:40px;
+}
+
+</style>
+</head>
+
+<body>
+
+<nav>
+
+<h2>HALSAA</h2>
+
+<ul>
+
+<li>Home</li>
+<li>Discover</li>
+<li>Features</li>
+<li>Price</li>
+<li>Login</li>
+
+</ul>
+
+</nav>
+
+<div class="hero">
+
+<h1>Book Smart. Track Live. Skip the Wait.</h1>
+
+<p>HALSAA – Smart Doctor Appointment & Live Queue</p>
+
+</div>
+
+<h2>Discover Doctors</h2>
+
+<div class="cards">
+
+<div class="card">
+
+<h3>Dr Ravi Kumar</h3>
+
+<p>General Physician</p>
+
+<p>Nellore</p>
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=HALSAA">
+
+<br><br>
+
+<button onclick="showBooking()">Book Appointment</button>
+
+</div>
+
+</div>
+
+<div id="booking" style="display:none">
+
+<h2>Book Appointment</h2>
+
+<input placeholder="Name"><br><br>
+
+<input placeholder="Mobile Number"><br><br>
+
+<input placeholder="Age"><br><br>
+
+<select>
+
+<option>Problem</option>
+
+<option>Fever</option>
+
+<option>Consultation</option>
+
+<option>Checkup</option>
+
+</select>
+
+<br><br>
+
+<button onclick="confirmBooking()">Confirm Booking</button>
+
+</div>
+
+<div id="queue" style="display:none" class="queue">
+
+<h2>Live Queue</h2>
+
+<div class="card">
+
+<h3>Dr Ravi Kumar</h3>
+
+<p>Now Serving: Token 12</p>
+
+<p>Your Token: 16</p>
+
+<p>Expected Time: 12:20 PM</p>
+
+</div>
+
+</div>
+
+<script>
+
+function showBooking(){
+
+document.getElementById("booking").style.display="block"
+
+}
+
+function confirmBooking(){
+
+document.getElementById("queue").style.display="block"
+
+}
+
+</script>
+
+</body>
+</html>
