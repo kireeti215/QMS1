@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>HALSAA — Lab Technician Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --teal:#00C9A7;--teal2:#00E8C0;--teal-light:#E6FAF6;--teal-mid:rgba(0,201,167,0.12);
+  --gold:#FFB347;--gold-light:#FFF4E6;--gold2:#FFC86B;
+  --bg:#FDFCF7;--card:#fff;--text:#1A2E2A;--muted:#7A9E98;
+  --border:rgba(255,179,71,0.18);--shadow:0 4px 20px rgba(255,179,71,0.12);--shadow2:0 2px 12px rgba(0,0,0,0.06);
+  --red:#FF6B6B;--green:#00C853;--blue:#3B82F6;--purple:#8B5CF6;--sidebar:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+button,input,select,textarea{font-family:'Poppins',sans-serif;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,179,71,0.5)}50%{box-shadow:0 0 0 8px rgba(255,179,71,0)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+
+.app{display:flex;min-height:100vh;}
+
+/* ══ SIDEBAR ══ */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:linear-gradient(180deg,#3D2000 0%,#8B5E00 50%,var(--gold) 100%);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:100;
+  box-shadow:4px 0 24px rgba(0,0,0,0.15);
+}
+.sb-logo{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1);}
+.sb-brand{font-size:1.45rem;font-weight:900;color:#fff;}
+.sb-brand span{opacity:.7;}
+.sb-role{font-size:.54rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:3px;}
+
+.sb-user{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;}
+.sb-av{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;color:#fff;flex-shrink:0;}
+.sb-uname{font-size:.8rem;font-weight:800;color:#fff;}
+.sb-lab{font-size:.58rem;color:rgba(255,255,255,.5);}
+.sb-open{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.25);border-radius:100px;padding:3px 10px;margin-top:4px;width:fit-content;}
+.open-dot{width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse 1.5s infinite;flex-shrink:0;}
+.sb-open-text{font-size:.55rem;font-weight:800;color:#fff;}
+
+.sb-nav{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:2px;}
+.sb-sec{font-size:.54rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:10px 12px 4px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:all .2s;border:1px solid transparent;}
+.sb-item:hover{background:rgba(255,255,255,.1);}
+.sb-item.active{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.15);}
+.sb-icon{font-size:1rem;width:22px;text-align:center;flex-shrink:0;}
+.sb-lbl{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.65);}
+.sb-item.active .sb-lbl{color:#fff;}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.5rem;font-weight:800;padding:2px 6px;border-radius:100px;}
+.sb-badge-green{margin-left:auto;background:var(--green);color:#fff;font-size:.5rem;font-weight:800;padding:2px 6px;border-radius:100px;}
+
+.sb-bottom{padding:14px 12px;}
+.sb-stats-box{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:12px;margin-bottom:10px;}
+.sb-stats-lbl{font-size:.55rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px;}
+.sb-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.sb-stat-item{text-align:center;}
+.sb-stat-val{font-size:1.2rem;font-weight:900;color:#fff;line-height:1;}
+.sb-stat-sub{font-size:.52rem;color:rgba(255,255,255,.4);margin-top:1px;}
+.sb-logout{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;cursor:pointer;transition:background .2s;}
+.sb-logout:hover{background:rgba(255,107,107,.12);}
+.sb-logout span{font-size:.73rem;font-weight:600;color:rgba(255,255,255,.4);}
+
+/* ══ MAIN ══ */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ══ TOPBAR ══ */
+.topbar{
+  background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 12px rgba(255,179,71,.08);
+}
+.tb-left{display:flex;align-items:center;gap:14px;}
+.tb-title{font-size:.95rem;font-weight:800;color:var(--text);}
+.tb-sub{font-size:.65rem;color:var(--muted);}
+.tb-urgent{display:flex;align-items:center;gap:5px;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.2);border-radius:100px;padding:4px 12px;}
+.tb-urgent-text{font-size:.62rem;font-weight:800;color:var(--red);}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-date{font-size:.68rem;color:var(--muted);font-weight:600;}
+.tb-notif{width:36px;height:36px;background:var(--gold-light);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;}
+.notif-dot{position:absolute;top:7px;right:7px;width:6px;height:6px;background:var(--red);border-radius:50%;border:2px solid #fff;}
+
+/* ══ CONTENT ══ */
+.content{padding:20px 24px;flex:1;}
+.screen{display:none;animation:fadeUp .3s ease both;}
+.screen.active{display:block;}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--card);border-radius:16px;padding:16px 18px;border:1.5px solid var(--border);box-shadow:var(--shadow2);animation:fadeUp .4s ease both;}
+.sc-icon{font-size:1.4rem;margin-bottom:6px;display:block;}
+.sc-val{font-size:1.8rem;font-weight:900;line-height:1;margin-bottom:3px;}
+.sc-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+
+/* ══ PIPELINE SCREEN ══ */
+.pipeline-layout{display:grid;grid-template-columns:1fr 320px;gap:18px;}
+
+/* Urgent alert */
+.urgent-alert{background:rgba(255,107,107,.07);border:1.5px solid rgba(255,107,107,.2);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.ua-icon{font-size:1.4rem;flex-shrink:0;}
+.ua-title{font-size:.85rem;font-weight:800;color:var(--red);margin-bottom:2px;}
+.ua-sub{font-size:.68rem;color:rgba(255,107,107,.8);}
+
+/* Pipeline cards */
+.pipe-list{display:flex;flex-direction:column;gap:12px;}
+.pipe-card{background:var(--card);border-radius:18px;padding:18px;box-shadow:var(--shadow2);border-left:5px solid transparent;cursor:pointer;transition:all .2s;animation:slideIn .35s ease both;}
+.pipe-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.pipe-card.pending{border-left-color:var(--gold);}
+.pipe-card.processing{border-left-color:var(--teal);}
+.pipe-card.ready{border-left-color:var(--green);}
+.pipe-card.urgent{border-left-color:var(--red);}
+.pc-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:12px;}
+.pc-icon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.icon-gold{background:var(--gold-light);}
+.icon-teal{background:var(--teal-light);}
+.icon-green{background:rgba(0,200,83,.1);}
+.icon-red{background:rgba(255,107,107,.1);}
+.pc-info{flex:1;}
+.pc-name{font-size:.9rem;font-weight:800;color:var(--text);margin-bottom:3px;}
+.pc-tests{font-size:.68rem;color:var(--muted);margin-bottom:6px;}
+.pc-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.pc-tag{font-size:.56rem;font-weight:700;padding:3px 8px;border-radius:100px;}
+.tag-gold{background:rgba(255,179,71,.12);color:#CC7A00;}
+.tag-teal{background:var(--teal-mid);color:var(--teal);}
+.tag-green{background:rgba(0,200,83,.1);color:var(--green);}
+.tag-red{background:rgba(255,107,107,.1);color:var(--red);}
+.tag-blue{background:rgba(59,130,246,.1);color:var(--blue);}
+.pc-right{text-align:right;flex-shrink:0;}
+.pc-token{font-size:.9rem;font-weight:900;color:var(--teal);}
+.pc-time{font-size:.6rem;color:var(--muted);margin-top:3px;}
+.pc-progress{margin-bottom:12px;}
+.progress-bar{background:#F0F0F0;border-radius:100px;height:6px;margin-bottom:5px;}
+.progress-fill{border-radius:100px;height:6px;transition:width .8s;}
+.fill-gold{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.fill-teal{background:linear-gradient(90deg,var(--teal),var(--teal2));}
+.fill-green{background:linear-gradient(90deg,var(--green),#00E860);}
+.fill-red{background:linear-gradient(90deg,var(--red),#FF9999);}
+.progress-text{font-size:.62rem;color:var(--muted);display:flex;justify-content:space-between;}
+.pc-actions{display:flex;gap:8px;}
+.pca-btn{flex:1;padding:10px 8px;border-radius:11px;border:none;font-size:.72rem;font-weight:800;cursor:pointer;transition:all .2s;}
+.pca-btn:hover{transform:translateY(-1px);}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-gold-outline{background:var(--gold-light);color:#CC7A00;}
+.btn-green{background:rgba(0,200,83,.12);color:var(--green);}
+.btn-whatsapp{background:#25D366;color:#fff;}
+.btn-muted{background:#F5F5F5;color:var(--muted);}
+.btn-red-outline{background:rgba(255,107,107,.1);color:var(--red);}
+
+/* Right panel: upload + info */
+.right-panel{display:flex;flex-direction:column;gap:14px;position:sticky;top:80px;}
+.panel-card{background:var(--card);border-radius:18px;padding:18px;box-shadow:var(--shadow2);border:1px solid var(--border);}
+.panel-title{font-size:.64rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.upload-zone{border:2px dashed rgba(255,179,71,.4);border-radius:14px;padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gold-light);margin-bottom:14px;}
+.upload-zone:hover{background:rgba(255,179,71,.15);}
+.uz-icon{font-size:1.8rem;margin-bottom:6px;}
+.uz-text{font-size:.82rem;font-weight:700;color:#CC7A00;margin-bottom:3px;}
+.uz-sub{font-size:.62rem;color:rgba(204,122,0,.6);}
+.notes-input{width:100%;padding:11px 14px;border:1.5px solid #E8F5F2;border-radius:11px;font-size:.82rem;color:var(--text);outline:none;resize:none;height:70px;margin-bottom:12px;}
+.notes-input:focus{border-color:var(--teal);}
+.upload-actions{display:flex;flex-direction:column;gap:8px;}
+.upload-btn{width:100%;padding:12px;border-radius:12px;border:none;font-size:.82rem;font-weight:800;cursor:pointer;transition:opacity .2s;}
+.upload-btn:hover{opacity:.88;}
+.upload-btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;}
+.upload-btn-wa{background:#25D366;color:#fff;}
+
+/* Queue overview */
+.queue-overview{display:flex;flex-direction:column;gap:8px;}
+.qo-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F8F8F8;}
+.qo-row:last-child{border-bottom:none;}
+.qo-token{font-size:.82rem;font-weight:900;color:var(--teal);width:46px;}
+.qo-info{flex:1;}
+.qo-name{font-size:.78rem;font-weight:700;color:var(--text);}
+.qo-tests{font-size:.6rem;color:var(--muted);}
+.qo-status{font-size:.58rem;font-weight:800;padding:2px 8px;border-radius:100px;}
+.qs-pending{background:rgba(255,179,71,.15);color:#CC7A00;}
+.qs-processing{background:var(--teal-mid);color:var(--teal);}
+.qs-ready{background:rgba(0,200,83,.1);color:var(--green);}
+.qs-urgent{background:rgba(255,107,107,.1);color:var(--red);}
+
+/* ══ REPORTS SCREEN ══ */
+.reports-layout{display:grid;grid-template-columns:1fr 300px;gap:18px;}
+.rep-card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow2);border:1px solid var(--border);display:flex;align-items:center;gap:14px;margin-bottom:10px;animation:slideIn .3s ease both;}
+.rep-card:hover{transform:translateY(-1px);box-shadow:var(--shadow);}
+.rep-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.rep-info{flex:1;}
+.rep-name{font-size:.88rem;font-weight:800;color:var(--text);margin-bottom:2px;}
+.rep-tests{font-size:.65rem;color:var(--muted);}
+.rep-right{text-align:right;flex-shrink:0;}
+.rep-status{font-size:.6rem;font-weight:800;padding:3px 9px;border-radius:100px;display:inline-block;margin-bottom:5px;}
+.rs-done{background:rgba(0,200,83,.1);color:var(--green);}
+.rs-pending{background:rgba(255,179,71,.15);color:#CC7A00;}
+.rs-failed{background:rgba(255,107,107,.1);color:var(--red);}
+.rep-time{font-size:.6rem;color:var(--muted);margin-bottom:5px;}
+.rep-actions{display:flex;gap:5px;justify-content:flex-end;}
+.ra-btn{padding:5px 10px;border-radius:8px;border:none;font-size:.6rem;font-weight:800;cursor:pointer;}
+.ra-wa{background:#25D366;color:#fff;}
+.ra-dl{background:var(--teal-light);color:var(--teal);}
+
+/* Summary panel */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.sum-item{background:var(--bg);border-radius:11px;padding:12px;text-align:center;}
+.sum-val{font-size:1.4rem;font-weight:900;}
+.sum-lbl{font-size:.58rem;color:var(--muted);margin-top:2px;}
+.delivery-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F8F8F8;font-size:.75rem;}
+.delivery-row:last-child{border-bottom:none;}
+.dr-lbl{color:var(--muted);}
+.dr-val{font-weight:800;}
+
+/* ══ SEARCH SCREEN ══ */
+.search-bar-wrap{display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--border);border-radius:13px;padding:11px 16px;margin-bottom:20px;box-shadow:var(--shadow2);}
+.search-bar-wrap:focus-within{border-color:var(--gold);}
+.search-bar-wrap input{flex:1;border:none;outline:none;font-size:.88rem;color:var(--text);background:transparent;}
+.filter-chips{display:flex;gap:8px;margin-bottom:18px;}
+.f-chip{padding:6px 14px;border-radius:100px;font-size:.7rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all .2s;}
+.f-chip.active{background:var(--gold);border-color:var(--gold);color:#fff;}
+.search-layout{display:grid;grid-template-columns:1fr 320px;gap:18px;}
+.search-result-card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow2);border:1px solid var(--border);margin-bottom:10px;cursor:pointer;transition:all .2s;}
+.search-result-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.src-top{display:flex;align-items:center;gap:12px;}
+.src-av{width:44px;height:44px;border-radius:50%;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:900;color:var(--gold);flex-shrink:0;}
+.src-name{font-size:.88rem;font-weight:800;color:var(--text);}
+.src-meta{font-size:.63rem;color:var(--muted);margin-top:1px;}
+.src-tests-lbl{font-size:.62rem;color:var(--muted);margin-top:8px;margin-bottom:5px;}
+.src-tests-row{display:flex;gap:5px;flex-wrap:wrap;}
+.src-test-chip{font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:6px;background:#F5F5F5;color:var(--muted);}
+.history-detail{background:var(--card);border-radius:18px;padding:18px;box-shadow:var(--shadow2);border:1px solid var(--border);}
+.hd-head{background:linear-gradient(135deg,#8B5E00,var(--gold));border-radius:12px;padding:16px;text-align:center;margin-bottom:14px;}
+.hd-av{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:#fff;margin:0 auto 8px;}
+.hd-name{font-size:.95rem;font-weight:800;color:#fff;margin-bottom:2px;}
+.hd-meta{font-size:.65rem;color:rgba(255,255,255,.7);}
+.hist-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F8F8F8;font-size:.72rem;}
+.hist-row:last-child{border-bottom:none;}
+.hist-date{color:var(--muted);}
+.hist-status{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:100px;background:rgba(0,200,83,.1);color:var(--green);}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#1A2E2A;color:#fff;padding:11px 22px;border-radius:100px;font-size:.78rem;font-weight:700;z-index:999;display:none;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.2);}
+.toast.show{display:block;animation:toastIn .3s ease;}
+
+@media(max-width:900px){.sidebar{display:none;}.main{margin-left:0;}.stats-row{grid-template-columns:repeat(2,1fr);}.pipeline-layout,.reports-layout,.search-layout{grid-template-columns:1fr;}}
+
+/* ══ MOBILE RESPONSIVE ══ */
+@media(max-width:768px){
+  .sidebar{display:none !important;}
+  .main{margin-left:0 !important;}
+  .content{padding:14px 14px 90px !important;}
+  .topbar{padding:0 14px !important;height:52px !important;}
+  .tb-search,.tb-date{display:none !important;}
+  .stats-row,.rev-cards-row,.kpi-row{grid-template-columns:repeat(2,1fr) !important;}
+  .two-col,.tracker-layout,.profile-layout,.analytics-layout,.home-layout,.staff-layout,.settings-layout,.billing-layout,.alerts-layout,.overview-layout{grid-template-columns:1fr !important;}
+  .three-col,.clinic-grid{grid-template-columns:1fr !important;}
+  .qa-grid,.quick-grid{grid-template-columns:repeat(2,1fr) !important;}
+  .history-grid,.rev-cards,.kpi-grid{grid-template-columns:1fr !important;}
+  .right-panel,.add-staff-panel{display:none !important;}
+  .mobile-nav{display:none;display:flex !important;}
+}
+.mobile-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid #E8F5F2;
+  padding:8px 0 20px;
+  grid-template-columns:repeat(4,1fr);
+  box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+  z-index:200;
+}
+.mn-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 2px;}
+.mn-icon{font-size:1.2rem;}
+.mn-label{font-size:.5rem;font-weight:700;color:#7A9E98;}
+.mn-item.active .mn-label{color:#00C9A7;}
+.mn-item.active .mn-icon{filter:drop-shadow(0 0 3px rgba(0,201,167,.5));}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-brand">HAL<span>SAA</span></div>
+    <div class="sb-role">Lab Technician Portal</div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av">SY</div>
+    <div>
+      <div class="sb-uname">Suresh Yadav</div>
+      <div class="sb-lab">Vijaya Diagnostics</div>
+      <div class="sb-open"><div class="open-dot"></div><span class="sb-open-text">LAB OPEN</span></div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Lab Work</div>
+    <div class="sb-item active" onclick="showScreen('pipeline');setSb(this)"><div class="sb-icon">🧪</div><div class="sb-lbl">Sample Pipeline</div><div class="sb-badge">3</div></div>
+    <div class="sb-item" onclick="showScreen('reports');setSb(this)"><div class="sb-icon">📄</div><div class="sb-lbl">Reports Sent</div><div class="sb-badge-green">12</div></div>
+    <div class="sb-sec">Patients</div>
+    <div class="sb-item" onclick="showScreen('search');setSb(this)"><div class="sb-icon">🔍</div><div class="sb-lbl">Search Patient</div></div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-stats-box">
+      <div class="sb-stats-lbl">Today's Lab</div>
+      <div class="sb-stats-grid">
+        <div class="sb-stat-item"><div class="sb-stat-val">24</div><div class="sb-stat-sub">Samples</div></div>
+        <div class="sb-stat-item"><div class="sb-stat-val" style="color:var(--gold2);">12</div><div class="sb-stat-sub">Ready</div></div>
+        <div class="sb-stat-item"><div class="sb-stat-val" style="color:#FF9999;">3</div><div class="sb-stat-sub">Urgent</div></div>
+        <div class="sb-stat-item"><div class="sb-stat-val">98%</div><div class="sb-stat-sub">WhatsApp</div></div>
+      </div>
+    </div>
+    <div class="sb-logout"><span>🚪</span><span>Logout</span></div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <div><div class="tb-title" id="topbar-title">Sample Pipeline</div><div class="tb-sub">Vijaya Diagnostics · Hanamkonda</div></div>
+      <div class="tb-urgent"><span>🚨</span><span class="tb-urgent-text">3 URGENT PENDING</span></div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-date">Wed, 11 Mar 2026 · 11:30 AM</div>
+      <div class="tb-notif">🔔<div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ PIPELINE ══ -->
+    <div class="screen active" id="pipeline">
+      <div class="stats-row">
+        <div class="stat-card" style="animation-delay:.04s"><span class="sc-icon">🧫</span><div class="sc-val" style="color:var(--gold)">24</div><div class="sc-lbl">Samples Today</div></div>
+        <div class="stat-card" style="animation-delay:.08s"><span class="sc-icon">⚙️</span><div class="sc-val" style="color:var(--teal)">8</div><div class="sc-lbl">Processing</div></div>
+        <div class="stat-card" style="animation-delay:.12s"><span class="sc-icon">✅</span><div class="sc-val" style="color:var(--green)">12</div><div class="sc-lbl">Ready</div></div>
+        <div class="stat-card" style="animation-delay:.16s"><span class="sc-icon">🚨</span><div class="sc-val" style="color:var(--red)">3</div><div class="sc-lbl">Urgent</div></div>
+      </div>
+
+      <div class="urgent-alert">
+        <div class="ua-icon">🚨</div>
+        <div><div class="ua-title">3 Urgent Samples Need Immediate Attention!</div><div class="ua-sub">T-012 (Ramesh Kumar), T-018 (Priya Reddy), T-021 (Mohan Das) — Priority processing required</div></div>
+      </div>
+
+      <div class="pipeline-layout">
+        <div class="pipe-list">
+
+          <!-- URGENT: Processing -->
+          <div class="pipe-card urgent" style="animation-delay:.04s">
+            <div class="pc-top">
+              <div class="pc-icon icon-red">🩸</div>
+              <div class="pc-info">
+                <div class="pc-name">Ramesh Kumar</div>
+                <div class="pc-tests">Blood CBC · LFT · KFT (3 tests)</div>
+                <div class="pc-tags"><span class="pc-tag tag-red">🚨 URGENT</span><span class="pc-tag tag-blue">Doctor Referred</span><span class="pc-tag tag-gold">T-012</span></div>
+              </div>
+              <div class="pc-right"><div class="pc-token">T-012</div><div class="pc-time">Collected 9:15 AM</div></div>
+            </div>
+            <div class="pc-progress">
+              <div class="progress-bar"><div class="progress-fill fill-teal" style="width:60%"></div></div>
+              <div class="progress-text"><span>Processing — 60%</span><span>~12 mins left</span></div>
+            </div>
+            <div class="pc-actions">
+              <button class="pca-btn btn-teal" onclick="showToast('✅ T-012 Ramesh Kumar — Marked Ready!')">✅ Mark Ready</button>
+              <button class="pca-btn btn-gold-outline" onclick="showToast('📤 Upload Report panel opened')">📤 Upload Report</button>
+              <button class="pca-btn btn-muted" onclick="showToast('📝 Notes saved')">📝 Notes</button>
+            </div>
+          </div>
+
+          <!-- URGENT: Pending -->
+          <div class="pipe-card urgent" style="animation-delay:.08s">
+            <div class="pc-top">
+              <div class="pc-icon icon-red">🔬</div>
+              <div class="pc-info">
+                <div class="pc-name">Priya Reddy</div>
+                <div class="pc-tests">Thyroid T3 · T4 · TSH (3 tests)</div>
+                <div class="pc-tags"><span class="pc-tag tag-red">🚨 URGENT</span><span class="pc-tag tag-gold">Sample Received</span></div>
+              </div>
+              <div class="pc-right"><div class="pc-token">T-018</div><div class="pc-time">Collected 9:42 AM</div></div>
+            </div>
+            <div class="pc-progress">
+              <div class="progress-bar"><div class="progress-fill fill-red" style="width:20%"></div></div>
+              <div class="progress-text"><span>Pending — 20%</span><span>~45 mins left</span></div>
+            </div>
+            <div class="pc-actions">
+              <button class="pca-btn btn-teal" onclick="showToast('▶️ T-018 processing started!')">▶ Start Processing</button>
+              <button class="pca-btn btn-gold-outline" onclick="showToast('📤 Upload panel opened')">📤 Upload</button>
+              <button class="pca-btn btn-muted" onclick="showToast('📝 Notes saved')">📝 Notes</button>
+            </div>
+          </div>
+
+          <!-- PROCESSING -->
+          <div class="pipe-card processing" style="animation-delay:.12s">
+            <div class="pc-top">
+              <div class="pc-icon icon-teal">🧪</div>
+              <div class="pc-info">
+                <div class="pc-name">Venkat Rao</div>
+                <div class="pc-tests">HbA1c · Blood Sugar Fasting (2 tests)</div>
+                <div class="pc-tags"><span class="pc-tag tag-teal">⚙️ Processing</span><span class="pc-tag tag-blue">Diabetes Panel</span></div>
+              </div>
+              <div class="pc-right"><div class="pc-token">T-023</div><div class="pc-time">Started 10:05 AM</div></div>
+            </div>
+            <div class="pc-progress">
+              <div class="progress-bar"><div class="progress-fill fill-teal" style="width:75%"></div></div>
+              <div class="progress-text"><span>Processing — 75%</span><span>~8 mins left</span></div>
+            </div>
+            <div class="pc-actions">
+              <button class="pca-btn btn-teal" onclick="showToast('✅ T-023 marked ready!')">✅ Mark Ready</button>
+              <button class="pca-btn btn-gold-outline" onclick="showToast('📤 Upload panel opened')">📤 Upload Report</button>
+              <button class="pca-btn btn-muted" onclick="showToast('📝 Notes saved')">📝 Notes</button>
+            </div>
+          </div>
+
+          <!-- READY TO SEND -->
+          <div class="pipe-card ready" style="animation-delay:.16s">
+            <div class="pc-top">
+              <div class="pc-icon icon-green">✅</div>
+              <div class="pc-info">
+                <div class="pc-name">Kavya Sharma</div>
+                <div class="pc-tests">Urine Routine · Culture (2 tests)</div>
+                <div class="pc-tags"><span class="pc-tag tag-green">✅ Report Ready</span><span class="pc-tag tag-gold">WhatsApp Pending</span></div>
+              </div>
+              <div class="pc-right"><div class="pc-token">T-029</div><div class="pc-time">Ready 10:52 AM</div></div>
+            </div>
+            <div class="pc-actions">
+              <button class="pca-btn btn-whatsapp" onclick="showToast('📲 Report sent to Kavya on WhatsApp! ✓')">📲 Send WhatsApp</button>
+              <button class="pca-btn btn-teal" onclick="showToast('📤 Re-upload panel opened')">📤 Re-upload</button>
+              <button class="pca-btn btn-muted" onclick="showToast('📥 PDF Downloaded')">⬇ PDF</button>
+            </div>
+          </div>
+
+          <!-- PENDING -->
+          <div class="pipe-card pending" style="animation-delay:.2s">
+            <div class="pc-top">
+              <div class="pc-icon icon-gold">🔬</div>
+              <div class="pc-info">
+                <div class="pc-name">Arun Kumar</div>
+                <div class="pc-tests">Lipid Profile · Cholesterol (2 tests)</div>
+                <div class="pc-tags"><span class="pc-tag tag-gold">Sample Received</span><span class="pc-tag tag-teal">Fasting Required</span></div>
+              </div>
+              <div class="pc-right"><div class="pc-token">T-034</div><div class="pc-time">Collected 11:10 AM</div></div>
+            </div>
+            <div class="pc-progress">
+              <div class="progress-bar"><div class="progress-fill fill-gold" style="width:5%"></div></div>
+              <div class="progress-text"><span>Queued</span><span>~60 mins est.</span></div>
+            </div>
+            <div class="pc-actions">
+              <button class="pca-btn btn-teal" onclick="showToast('▶️ T-034 processing started!')">▶ Start Processing</button>
+              <button class="pca-btn btn-muted" onclick="showToast('📝 Notes saved')">📝 Notes</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Upload panel + queue overview -->
+        <div class="right-panel">
+          <div class="panel-card">
+            <div class="panel-title">Upload Report</div>
+            <div style="background:var(--gold-light);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <div style="width:38px;height:38px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:900;color:#fff;flex-shrink:0;">R</div>
+              <div><div style="font-size:.85rem;font-weight:800;color:var(--text);">Ramesh Kumar</div><div style="font-size:.63rem;color:var(--muted);">T-012 · Blood CBC + LFT + KFT</div></div>
+            </div>
+            <div class="upload-zone" onclick="showToast('📁 File picker opened')">
+              <div class="uz-icon">📄</div>
+              <div class="uz-text">Click to Upload PDF Report</div>
+              <div class="uz-sub">PDF, JPG up to 10 MB</div>
+            </div>
+            <textarea class="notes-input" placeholder="Add tech notes, reference ranges, flags..."></textarea>
+            <div class="upload-actions">
+              <button class="upload-btn upload-btn-gold" onclick="showToast('✅ Report uploaded successfully!')">📤 Upload & Save Report</button>
+              <button class="upload-btn upload-btn-wa" onclick="showToast('📲 Report sent via WhatsApp to patient!')">📲 Upload & Send WhatsApp</button>
+            </div>
+          </div>
+          <div class="panel-card">
+            <div class="panel-title">Queue Overview</div>
+            <div class="queue-overview">
+              <div class="qo-row"><div class="qo-token">T-012</div><div class="qo-info"><div class="qo-name">Ramesh Kumar</div><div class="qo-tests">CBC · LFT · KFT</div></div><span class="qo-status qs-urgent">🚨 Urgent</span></div>
+              <div class="qo-row"><div class="qo-token">T-018</div><div class="qo-info"><div class="qo-name">Priya Reddy</div><div class="qo-tests">Thyroid Panel</div></div><span class="qo-status qs-urgent">🚨 Urgent</span></div>
+              <div class="qo-row"><div class="qo-token">T-023</div><div class="qo-info"><div class="qo-name">Venkat Rao</div><div class="qo-tests">HbA1c · Sugar</div></div><span class="qo-status qs-processing">⚙️ Processing</span></div>
+              <div class="qo-row"><div class="qo-token">T-029</div><div class="qo-info"><div class="qo-name">Kavya Sharma</div><div class="qo-tests">Urine Routine</div></div><span class="qo-status qs-ready">✅ Ready</span></div>
+              <div class="qo-row"><div class="qo-token">T-034</div><div class="qo-info"><div class="qo-name">Arun Kumar</div><div class="qo-tests">Lipid Profile</div></div><span class="qo-status qs-pending">⏳ Pending</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ REPORTS ══ -->
+    <div class="screen" id="reports">
+      <div class="stats-row">
+        <div class="stat-card" style="animation-delay:.04s"><span class="sc-icon">📤</span><div class="sc-val" style="color:var(--green)">12</div><div class="sc-lbl">Reports Sent</div></div>
+        <div class="stat-card" style="animation-delay:.08s"><span class="sc-icon">✅</span><div class="sc-val" style="color:var(--teal)">10</div><div class="sc-lbl">Delivered</div></div>
+        <div class="stat-card" style="animation-delay:.12s"><span class="sc-icon">⏳</span><div class="sc-val" style="color:var(--gold)">2</div><div class="sc-lbl">Pending</div></div>
+        <div class="stat-card" style="animation-delay:.16s"><span class="sc-icon">📲</span><div class="sc-val" style="color:var(--blue)">98%</div><div class="sc-lbl">WhatsApp Rate</div></div>
+      </div>
+      <div class="reports-layout">
+        <div>
+          <div class="rep-card" style="animation-delay:.04s">
+            <div class="rep-icon icon-green">✅</div>
+            <div class="rep-info"><div class="rep-name">Sunitha Rao</div><div class="rep-tests">Blood CBC · LFT · KFT</div></div>
+            <div class="rep-right"><div class="rep-status rs-done">Delivered ✓</div><div class="rep-time">Sent 10:12 AM</div><div class="rep-actions"><button class="ra-btn ra-wa" onclick="showToast('📲 Resent to Sunitha!')">↩ Resend</button><button class="ra-btn ra-dl" onclick="showToast('⬇️ Downloaded!')">⬇ PDF</button></div></div>
+          </div>
+          <div class="rep-card" style="animation-delay:.08s">
+            <div class="rep-icon icon-teal">🧪</div>
+            <div class="rep-info"><div class="rep-name">Mahesh Kumar</div><div class="rep-tests">Thyroid Panel · TSH</div></div>
+            <div class="rep-right"><div class="rep-status rs-done">Delivered ✓</div><div class="rep-time">Sent 10:35 AM</div><div class="rep-actions"><button class="ra-btn ra-wa" onclick="showToast('📲 Resent to Mahesh!')">↩ Resend</button><button class="ra-btn ra-dl" onclick="showToast('⬇️ Downloaded!')">⬇ PDF</button></div></div>
+          </div>
+          <div class="rep-card" style="animation-delay:.12s">
+            <div class="rep-icon icon-green">✅</div>
+            <div class="rep-info"><div class="rep-name">Lakshmi Devi</div><div class="rep-tests">HbA1c · Blood Sugar · Lipid</div></div>
+            <div class="rep-right"><div class="rep-status rs-done">Delivered ✓</div><div class="rep-time">Sent 10:48 AM</div><div class="rep-actions"><button class="ra-btn ra-wa" onclick="showToast('📲 Resent!')">↩ Resend</button><button class="ra-btn ra-dl" onclick="showToast('⬇️ Downloaded!')">⬇ PDF</button></div></div>
+          </div>
+          <div class="rep-card" style="animation-delay:.16s">
+            <div class="rep-icon icon-gold">⏳</div>
+            <div class="rep-info"><div class="rep-name">Geeta Rao</div><div class="rep-tests">Urine Routine · Culture</div></div>
+            <div class="rep-right"><div class="rep-status rs-pending">Pending Send</div><div class="rep-time">Ready 11:02 AM</div><div class="rep-actions"><button class="ra-btn ra-wa" onclick="showToast('📲 Sent to Geeta!')">📲 Send Now</button><button class="ra-btn ra-dl" onclick="showToast('⬇️ Downloaded!')">⬇ PDF</button></div></div>
+          </div>
+          <div class="rep-card" style="animation-delay:.2s">
+            <div class="rep-icon icon-green">✅</div>
+            <div class="rep-info"><div class="rep-name">Ravi Kumar</div><div class="rep-tests">X-Ray Chest · ECG</div></div>
+            <div class="rep-right"><div class="rep-status rs-done">Delivered ✓</div><div class="rep-time">Sent 11:18 AM</div><div class="rep-actions"><button class="ra-btn ra-wa" onclick="showToast('📲 Resent!')">↩ Resend</button><button class="ra-btn ra-dl" onclick="showToast('⬇️ Downloaded!')">⬇ PDF</button></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel-card">
+            <div class="panel-title">Today's Summary</div>
+            <div class="sum-grid">
+              <div class="sum-item"><div class="sum-val" style="color:var(--green)">12</div><div class="sum-lbl">Sent</div></div>
+              <div class="sum-item"><div class="sum-val" style="color:var(--teal)">10</div><div class="sum-lbl">Delivered</div></div>
+              <div class="sum-item"><div class="sum-val" style="color:var(--gold)">2</div><div class="sum-lbl">Pending</div></div>
+              <div class="sum-item"><div class="sum-val" style="color:var(--blue)">0</div><div class="sum-lbl">Failed</div></div>
+            </div>
+            <div class="delivery-row"><span class="dr-lbl">WhatsApp Success</span><span class="dr-val" style="color:var(--green)">98%</span></div>
+            <div class="delivery-row"><span class="dr-lbl">Avg TAT</span><span class="dr-val" style="color:var(--teal)">62 mins</span></div>
+            <div class="delivery-row"><span class="dr-lbl">Fastest Report</span><span class="dr-val" style="color:var(--gold)">18 mins</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SEARCH ══ -->
+    <div class="screen" id="search">
+      <div style="margin-bottom:18px;"><div style="font-size:1rem;font-weight:800;color:var(--text);">Search Patient Records</div><div style="font-size:.7rem;color:var(--muted);">Find lab history by name or token</div></div>
+      <div class="search-bar-wrap">
+        <span style="color:var(--muted);">🔍</span>
+        <input placeholder="Enter patient name or token number..."/>
+      </div>
+      <div class="filter-chips">
+        <div class="f-chip active" onclick="setFilter(this)">All</div>
+        <div class="f-chip" onclick="setFilter(this)">Today</div>
+        <div class="f-chip" onclick="setFilter(this)">Urgent</div>
+        <div class="f-chip" onclick="setFilter(this)">Pending</div>
+        <div class="f-chip" onclick="setFilter(this)">Ready</div>
+      </div>
+      <div class="search-layout">
+        <div>
+          <div style="font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Recent Patients</div>
+          <div class="search-result-card">
+            <div class="src-top"><div class="src-av">R</div><div><div class="src-name">Ramesh Kumar</div><div class="src-meta">T-012 · 9:15 AM · +91 98765 43210</div></div><span class="qo-status qs-urgent" style="margin-left:auto;">🚨 Urgent</span></div>
+            <div class="src-tests-lbl">Tests Ordered:</div>
+            <div class="src-tests-row"><span class="src-test-chip">Blood CBC</span><span class="src-test-chip">LFT</span><span class="src-test-chip">KFT</span></div>
+          </div>
+          <div class="search-result-card">
+            <div class="src-top"><div class="src-av">P</div><div><div class="src-name">Priya Reddy</div><div class="src-meta">T-018 · 9:42 AM · +91 87654 32109</div></div><span class="qo-status qs-processing" style="margin-left:auto;">⚙️ Processing</span></div>
+            <div class="src-tests-lbl">Tests Ordered:</div>
+            <div class="src-tests-row"><span class="src-test-chip">Thyroid T3</span><span class="src-test-chip">T4</span><span class="src-test-chip">TSH</span></div>
+          </div>
+          <div class="search-result-card">
+            <div class="src-top"><div class="src-av">K</div><div><div class="src-name">Kavya Sharma</div><div class="src-meta">T-029 · 10:52 AM · +91 65432 10987</div></div><span class="qo-status qs-ready" style="margin-left:auto;">✅ Ready</span></div>
+            <div class="src-tests-lbl">Tests Ordered:</div>
+            <div class="src-tests-row"><span class="src-test-chip">Urine Routine</span><span class="src-test-chip">Culture</span></div>
+          </div>
+          <div class="search-result-card">
+            <div class="src-top"><div class="src-av">V</div><div><div class="src-name">Venkat Rao</div><div class="src-meta">T-023 · 10:05 AM · +91 76543 21098</div></div><span class="qo-status qs-processing" style="margin-left:auto;">⚙️ Processing</span></div>
+            <div class="src-tests-lbl">Tests Ordered:</div>
+            <div class="src-tests-row"><span class="src-test-chip">HbA1c</span><span class="src-test-chip">Blood Sugar</span></div>
+          </div>
+        </div>
+        <div class="history-detail">
+          <div class="hd-head">
+            <div class="hd-av">R</div>
+            <div class="hd-name">Ramesh Kumar</div>
+            <div class="hd-meta">+91 98765 43210 · 35 yrs</div>
+          </div>
+          <div style="font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Lab History</div>
+          <div class="hist-row"><span class="hist-date">Today · T-012 · CBC+LFT+KFT</span><span class="hist-status" style="background:rgba(255,107,107,.1);color:var(--red);">Urgent</span></div>
+          <div class="hist-row"><span class="hist-date">5 Nov · T-089 · CBC · Thyroid</span><span class="hist-status">Done ✓</span></div>
+          <div class="hist-row"><span class="hist-date">12 Oct · T-041 · Blood Sugar</span><span class="hist-status">Done ✓</span></div>
+          <div class="hist-row"><span class="hist-date">3 Sep · T-022 · Lipid Panel</span><span class="hist-status">Done ✓</span></div>
+          <div class="hist-row"><span class="hist-date">14 Aug · T-078 · KFT+LFT</span><span class="hist-status">Done ✓</span></div>
+          <button style="width:100%;margin-top:14px;padding:11px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff;border:none;border-radius:11px;font-size:.8rem;font-weight:800;cursor:pointer;" onclick="showToast('📲 Full history sent on WhatsApp!')">📲 Send Full History on WhatsApp</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+const titleMap={pipeline:'Sample Pipeline',reports:'Reports Sent',search:'Search Patient'};
+function showScreen(id){
+  const mnItems=document.querySelectorAll('.mn-item');
+  mnItems.forEach((it,i)=>{
+    const sc=it.getAttribute('onclick');
+    if(sc&&sc.includes("'"+id+"'"))it.classList.add('active');
+    else it.classList.remove('active');
+  });
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('topbar-title').textContent=titleMap[id]||id;
+  window.scrollTo(0,0);
+}
+function setMobileNav(el){document.querySelectorAll(".mn-item").forEach(i=>i.classList.remove("active"));if(el)el.classList.add("active");}
+function setSb(el){document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');}
+function setFilter(el){document.querySelectorAll('.f-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
+let tt;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2500);}
+</script>
+
+<nav class="mobile-nav" id="mobileNav">
+  <div class="mn-item active" onclick="showScreen('overview');setMobileNav(this)"><div class="mn-icon">🏠</div><div class="mn-label">Overview</div></div>
+  <div class="mn-item" onclick="showScreen('pipeline');setMobileNav(this)"><div class="mn-icon">🧪</div><div class="mn-label">Pipeline</div></div>
+  <div class="mn-item" onclick="showScreen('reports');setMobileNav(this)"><div class="mn-icon">📄</div><div class="mn-label">Reports</div></div>
+  <div class="mn-item" onclick="showScreen('search');setMobileNav(this)"><div class="mn-icon">🔍</div><div class="mn-label">Search</div></div>
+</nav>
+</body>
+</html>

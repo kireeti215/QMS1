@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>HALSAA — Doctor Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --teal:#00C9A7;--teal2:#00E8C0;--teal-light:#E6FAF6;--teal-mid:rgba(0,201,167,0.12);
+  --gold:#FFB347;--gold-light:#FFF4E6;
+  --bg:#F4FDFB;--card:#fff;--text:#1A2E2A;--muted:#7A9E98;
+  --border:rgba(0,201,167,0.15);--shadow:0 4px 20px rgba(0,201,167,0.10);--shadow2:0 2px 12px rgba(0,0,0,0.06);
+  --red:#FF6B6B;--green:#00C853;--blue:#3B82F6;--sidebar:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+button,input,select{font-family:'Poppins',sans-serif;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,201,167,0.4)}50%{box-shadow:0 0 0 8px rgba(0,201,167,0)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+
+.app{display:flex;min-height:100vh;}
+
+/* ══ SIDEBAR ══ */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:linear-gradient(180deg,#0A2820 0%,#0A7B68 60%,var(--teal) 100%);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:100;
+  box-shadow:4px 0 24px rgba(0,0,0,0.14);
+}
+.sb-logo{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-brand{font-size:1.45rem;font-weight:900;color:#fff;}
+.sb-brand span{color:var(--gold);}
+.sb-role{font-size:.54rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:3px;}
+
+.sb-doc{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px;}
+.sb-doc-av{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.sb-doc-name{font-size:.8rem;font-weight:800;color:#fff;}
+.sb-doc-spec{font-size:.58rem;color:rgba(255,255,255,.5);}
+.sb-status{display:flex;align-items:center;gap:5px;background:rgba(0,200,83,.2);border:1px solid rgba(0,200,83,.3);border-radius:100px;padding:3px 10px;margin-top:4px;width:fit-content;cursor:pointer;}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;flex-shrink:0;}
+.sb-status-text{font-size:.55rem;font-weight:800;color:#00F065;}
+
+.sb-nav{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:2px;}
+.sb-sec{font-size:.54rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:10px 12px 4px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:all .2s;border:1px solid transparent;}
+.sb-item:hover{background:rgba(255,255,255,.08);}
+.sb-item.active{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.12);}
+.sb-icon{font-size:1rem;width:22px;text-align:center;flex-shrink:0;}
+.sb-lbl{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.6);}
+.sb-item.active .sb-lbl{color:#fff;}
+.sb-badge{margin-left:auto;background:var(--gold);color:#fff;font-size:.5rem;font-weight:800;padding:2px 6px;border-radius:100px;}
+
+.sb-bottom{padding:14px 12px;}
+.sb-today-box{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;margin-bottom:10px;}
+.sb-today-lbl{font-size:.55rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px;}
+.sb-today-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.sb-today-item{text-align:center;}
+.sb-today-val{font-size:1.2rem;font-weight:900;color:#fff;line-height:1;}
+.sb-today-sub{font-size:.52rem;color:rgba(255,255,255,.4);margin-top:1px;}
+.sb-logout{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;cursor:pointer;transition:background .2s;}
+.sb-logout:hover{background:rgba(255,107,107,.12);}
+.sb-logout span{font-size:.73rem;font-weight:600;color:rgba(255,255,255,.4);}
+
+/* ══ MAIN ══ */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ══ TOPBAR ══ */
+.topbar{
+  background:rgba(255,255,255,.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.tb-left{display:flex;align-items:center;gap:14px;}
+.tb-title{font-size:.95rem;font-weight:800;color:var(--text);}
+.tb-sub{font-size:.65rem;color:var(--muted);}
+.tb-avail{display:flex;align-items:center;gap:5px;background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.2);border-radius:100px;padding:4px 12px;cursor:pointer;}
+.tb-avail-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;}
+.tb-avail-text{font-size:.62rem;font-weight:800;color:var(--green);}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-voice{display:flex;align-items:center;gap:6px;background:var(--gold-light);border:1px solid rgba(255,179,71,.25);border-radius:100px;padding:5px 14px;cursor:pointer;}
+.tb-voice-text{font-size:.62rem;font-weight:800;color:#CC7A00;}
+.tb-date{font-size:.68rem;color:var(--muted);font-weight:600;}
+.tb-notif{width:36px;height:36px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;}
+.notif-dot{position:absolute;top:7px;right:7px;width:6px;height:6px;background:var(--gold);border-radius:50%;border:2px solid #fff;}
+
+/* ══ CONTENT ══ */
+.content{padding:20px 24px;flex:1;}
+.screen{display:none;animation:fadeUp .3s ease both;}
+.screen.active{display:block;}
+
+/* ══ TODAY SCREEN ══ */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--card);border-radius:16px;padding:16px 18px;border:1.5px solid var(--border);box-shadow:var(--shadow2);animation:fadeUp .4s ease both;}
+.sc-icon{font-size:1.4rem;margin-bottom:6px;display:block;}
+.sc-val{font-size:1.8rem;font-weight:900;line-height:1;margin-bottom:3px;}
+.sc-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+
+/* 3-column clinical layout */
+.clinical-layout{display:grid;grid-template-columns:300px 1fr 280px;gap:16px;}
+
+/* Left: Now consulting */
+.consult-card{
+  background:linear-gradient(145deg,#0A7B68 0%,var(--teal) 100%);
+  border-radius:20px;padding:22px;
+  display:flex;flex-direction:column;gap:16px;
+  position:relative;overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,123,104,0.3);
+}
+.consult-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(255,255,255,.07);border-radius:50%;}
+.consult-card::after{content:'';position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;background:rgba(255,179,71,.07);border-radius:50%;}
+.cc-label{font-size:.58rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.65);display:flex;align-items:center;gap:6px;position:relative;z-index:1;}
+.cc-patient{position:relative;z-index:1;display:flex;align-items:center;gap:12px;}
+.cc-av{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;color:#fff;flex-shrink:0;}
+.cc-name{font-size:1rem;font-weight:900;color:#fff;margin-bottom:2px;}
+.cc-meta{font-size:.68rem;color:rgba(255,255,255,.7);margin-bottom:6px;}
+.cc-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.cc-tag{font-size:.56rem;font-weight:700;padding:3px 8px;border-radius:100px;background:rgba(255,255,255,.18);color:#fff;}
+.cc-tag.gold{background:rgba(255,179,71,.3);color:var(--gold);}
+.cc-btns{display:flex;flex-direction:column;gap:7px;position:relative;z-index:1;}
+.cc-btn{padding:11px;border-radius:11px;border:none;font-size:.78rem;font-weight:800;cursor:pointer;transition:all .2s;text-align:center;}
+.cc-btn:hover{transform:translateY(-1px);}
+.btn-white{background:#fff;color:var(--teal);}
+.btn-gold{background:var(--gold);color:#fff;box-shadow:0 4px 12px rgba(255,179,71,.4);}
+.btn-outline{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)!important;}
+.cc-controls{display:flex;gap:7px;position:relative;z-index:1;}
+.ctrl-btn{flex:1;padding:10px 6px;border-radius:11px;border:none;font-size:.68rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .2s;}
+.ctrl-next{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.25)!important;}
+.ctrl-hold{background:rgba(255,179,71,.25);color:var(--gold);}
+.ctrl-skip{background:rgba(255,107,107,.2);color:#FF9999;}
+
+/* Middle: Queue list */
+.queue-panel{background:var(--card);border-radius:20px;border:1px solid var(--border);box-shadow:var(--shadow2);display:flex;flex-direction:column;overflow:hidden;}
+.qp-header{padding:14px 18px;border-bottom:1px solid #F0F0F0;display:flex;align-items:center;justify-content:space-between;}
+.qp-title{font-size:.82rem;font-weight:800;color:var(--text);}
+.qp-count{background:var(--teal-mid);color:var(--teal);font-size:.62rem;font-weight:800;padding:3px 10px;border-radius:100px;}
+.qp-search{display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:9px;padding:7px 12px;font-size:.72rem;color:var(--muted);cursor:text;}
+.queue-scroll{overflow-y:auto;max-height:420px;padding:10px;}
+.queue-scroll::-webkit-scrollbar{width:3px;}
+.queue-scroll::-webkit-scrollbar-thumb{background:var(--teal-mid);border-radius:2px;}
+.q-card{background:#FAFFFE;border-radius:13px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:7px;border-left:4px solid transparent;cursor:pointer;transition:all .2s;animation:slideIn .35s ease both;}
+.q-card:hover{background:var(--teal-light);box-shadow:var(--shadow2);}
+.q-card.active-now{border-left-color:var(--teal);background:linear-gradient(135deg,var(--teal-light),#fff);}
+.q-card.next{border-left-color:var(--gold);background:linear-gradient(135deg,#FFFDF7,#fff);}
+.q-card.waiting{border-left-color:#E0E0E0;}
+.q-num{font-size:.95rem;font-weight:900;width:44px;text-align:center;flex-shrink:0;}
+.q-card.active-now .q-num{color:var(--teal);}
+.q-card.next .q-num{color:var(--gold);}
+.q-card.waiting .q-num{color:var(--muted);}
+.q-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:900;flex-shrink:0;}
+.av-teal{background:var(--teal-light);color:var(--teal);}
+.av-gold{background:var(--gold-light);color:#CC7A00;}
+.av-gray{background:#F5F5F5;color:var(--muted);}
+.q-info{flex:1;}
+.q-name{font-size:.82rem;font-weight:800;color:var(--text);margin-bottom:1px;}
+.q-meta{font-size:.6rem;color:var(--muted);}
+.q-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+.q-pill{font-size:.53rem;font-weight:800;padding:2px 7px;border-radius:100px;}
+.pill-next{background:rgba(255,179,71,.15);color:#CC7A00;}
+.pill-wait{background:var(--teal-mid);color:var(--teal);}
+.pill-done{background:rgba(0,200,83,.1);color:var(--green);}
+.q-type{font-size:.58rem;color:var(--muted);}
+
+/* Right: Patient detail panel */
+.detail-panel{background:var(--card);border-radius:20px;border:1px solid var(--border);box-shadow:var(--shadow2);overflow:hidden;position:sticky;top:80px;}
+.dp-header{background:linear-gradient(135deg,#0A7B68,var(--teal));padding:18px;text-align:center;}
+.dp-av{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;color:#fff;margin:0 auto 10px;}
+.dp-name{font-size:.95rem;font-weight:800;color:#fff;margin-bottom:2px;}
+.dp-token{font-size:1.2rem;font-weight:900;color:var(--gold);}
+.dp-meta{font-size:.65rem;color:rgba(255,255,255,.6);margin-top:2px;}
+.dp-body{padding:16px;}
+.dp-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.dp-info-item{background:var(--bg);border-radius:10px;padding:10px;}
+.dp-info-lbl{font-size:.56rem;font-weight:700;color:var(--muted);margin-bottom:3px;}
+.dp-info-val{font-size:.78rem;font-weight:800;color:var(--text);}
+.dp-sec-title{font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.vitals-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;}
+.vital-chip{background:var(--teal-light);border-radius:10px;padding:9px 6px;text-align:center;}
+.vital-val{font-size:.82rem;font-weight:900;color:var(--teal);}
+.vital-lbl{font-size:.52rem;color:var(--muted);}
+.dp-visit-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #F8F8F8;font-size:.7rem;}
+.dp-visit-row:last-child{border-bottom:none;}
+.dp-visit-date{color:var(--muted);}
+.dp-visit-fee{font-weight:800;color:var(--teal);}
+.dp-actions{display:flex;flex-direction:column;gap:7px;margin-top:14px;}
+.dp-btn{padding:11px;border-radius:11px;border:none;font-size:.78rem;font-weight:800;cursor:pointer;transition:all .2s;}
+.dp-btn:hover{transform:translateY(-1px);}
+.dp-btn-teal{background:var(--teal);color:#fff;}
+.dp-btn-gold{background:var(--gold-light);color:#CC7A00;}
+.dp-btn-green{background:var(--green);color:#fff;}
+
+/* ══ ANALYTICS SCREEN ══ */
+.analytics-top{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.period-tabs{display:flex;gap:8px;margin-bottom:18px;}
+.period-tab{padding:7px 18px;border-radius:100px;font-size:.72rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all .2s;}
+.period-tab.active{background:var(--teal);border-color:var(--teal);color:#fff;}
+.analytics-layout{display:grid;grid-template-columns:1fr 300px;gap:18px;}
+.a-card{background:var(--card);border-radius:18px;padding:20px;border:1px solid var(--border);box-shadow:var(--shadow2);margin-bottom:16px;}
+.a-card-title{font-size:.64rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+.bar-chart{display:flex;align-items:flex-end;gap:10px;height:120px;margin-bottom:8px;}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bar{width:100%;border-radius:6px 6px 0 0;background:var(--teal-mid);transition:height .5s;position:relative;min-height:4px;}
+.bar.highlight{background:var(--teal);}
+.bar-val{font-size:.56rem;font-weight:800;color:var(--teal);position:absolute;top:-16px;left:50%;transform:translateX(-50%);white-space:nowrap;}
+.bar-label{font-size:.58rem;color:var(--muted);font-weight:600;}
+.stat-rows{display:flex;flex-direction:column;gap:0;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #F8F8F8;}
+.stat-row:last-child{border-bottom:none;}
+.sr-label{font-size:.78rem;color:var(--text);font-weight:600;display:flex;align-items:center;gap:8px;}
+.sr-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sr-val{font-size:.88rem;font-weight:800;}
+.sr-bar-wrap{flex:1;height:6px;background:#F0F0F0;border-radius:3px;margin:0 14px;}
+.sr-bar{height:6px;border-radius:3px;}
+
+/* ══ AVAILABILITY SCREEN ══ */
+.avail-layout{display:grid;grid-template-columns:1fr 340px;gap:18px;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #F5F5F5;}
+.toggle-row:last-child{border-bottom:none;}
+.tr-info{flex:1;}
+.tr-label{font-size:.85rem;font-weight:700;color:var(--text);}
+.tr-sub{font-size:.65rem;color:var(--muted);margin-top:2px;}
+.toggle{width:46px;height:26px;border-radius:13px;background:#E0E0E0;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--teal);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.toggle.on::after{transform:translateX(20px);}
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px;}
+.day-chip{padding:12px 6px;border-radius:11px;text-align:center;cursor:pointer;border:1.5px solid #E0EEE8;transition:all .2s;}
+.day-chip.active{background:var(--teal);border-color:var(--teal);}
+.day-name{font-size:.62rem;font-weight:800;color:var(--muted);}
+.day-chip.active .day-name{color:#fff;}
+.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.time-input{width:100%;padding:11px 14px;border:1.5px solid #E0EEE8;border-radius:11px;font-size:.85rem;color:var(--text);outline:none;transition:border .2s;}
+.time-input:focus{border-color:var(--teal);}
+.time-lbl{font-size:.65rem;font-weight:700;color:var(--muted);margin-bottom:5px;}
+.leave-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--red),#FF4444);color:#fff;border:none;border-radius:12px;font-size:.85rem;font-weight:800;cursor:pointer;margin-bottom:10px;}
+.resume-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;border:none;border-radius:12px;font-size:.85rem;font-weight:800;cursor:pointer;}
+
+/* ══ PROFILE SCREEN ══ */
+.profile-layout{display:grid;grid-template-columns:300px 1fr;gap:20px;}
+.profile-card{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:var(--shadow2);border:1px solid var(--border);margin-bottom:16px;}
+.pc-head{background:linear-gradient(135deg,#0A7B68,var(--teal));padding:28px 20px;text-align:center;}
+.pc-av{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 12px;}
+.pc-name{font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:3px;}
+.pc-spec{font-size:.72rem;color:rgba(255,255,255,.7);}
+.pc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #F5F5F5;}
+.pcs-item{padding:14px 8px;text-align:center;border-right:1px solid #F5F5F5;}
+.pcs-item:last-child{border-right:none;}
+.pcs-val{font-size:1.2rem;font-weight:900;color:var(--teal);}
+.pcs-lbl{font-size:.58rem;color:var(--muted);margin-top:2px;}
+.prof-section{background:var(--card);border-radius:16px;box-shadow:var(--shadow2);border:1px solid var(--border);overflow:hidden;margin-bottom:14px;}
+.prof-sec-hdr{padding:12px 16px;border-bottom:1px solid #F5F5F5;font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.prof-item{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid #F8F8F8;font-size:.82rem;}
+.prof-item:last-child{border-bottom:none;}
+.prof-item-label{font-weight:700;color:var(--text);}
+.prof-item-val{color:var(--muted);font-size:.75rem;}
+.prof-item-teal{color:var(--teal);font-weight:700;}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#1A2E2A;color:#fff;padding:11px 22px;border-radius:100px;font-size:.78rem;font-weight:700;z-index:999;display:none;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.2);}
+.toast.show{display:block;animation:toastIn .3s ease;}
+
+/* Responsive */
+@media(max-width:1100px){.clinical-layout{grid-template-columns:280px 1fr 260px;}}
+@media(max-width:960px){.clinical-layout{grid-template-columns:1fr;}.detail-panel{position:static;}}
+@media(max-width:900px){.sidebar{display:none;}.main{margin-left:0;}.stats-row,.analytics-top{grid-template-columns:repeat(2,1fr);}.analytics-layout,.avail-layout,.profile-layout{grid-template-columns:1fr;}}
+
+/* ══ MOBILE RESPONSIVE ══ */
+@media(max-width:768px){
+  .sidebar{display:none !important;}
+  .main{margin-left:0 !important;}
+  .content{padding:14px 14px 90px !important;}
+  .topbar{padding:0 14px !important;height:52px !important;}
+  .tb-search,.tb-date{display:none !important;}
+  .stats-row,.rev-cards-row,.kpi-row{grid-template-columns:repeat(2,1fr) !important;}
+  .two-col,.tracker-layout,.profile-layout,.analytics-layout,.home-layout,.staff-layout,.settings-layout,.billing-layout,.alerts-layout,.overview-layout{grid-template-columns:1fr !important;}
+  .three-col,.clinic-grid{grid-template-columns:1fr !important;}
+  .qa-grid,.quick-grid{grid-template-columns:repeat(2,1fr) !important;}
+  .history-grid,.rev-cards,.kpi-grid{grid-template-columns:1fr !important;}
+  .right-panel,.add-staff-panel{display:none !important;}
+  .mobile-nav{display:none;display:flex !important;}
+}
+.mobile-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid #E8F5F2;
+  padding:8px 0 20px;
+  grid-template-columns:repeat(4,1fr);
+  box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+  z-index:200;
+}
+.mn-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 2px;}
+.mn-icon{font-size:1.2rem;}
+.mn-label{font-size:.5rem;font-weight:700;color:#7A9E98;}
+.mn-item.active .mn-label{color:#00C9A7;}
+.mn-item.active .mn-icon{filter:drop-shadow(0 0 3px rgba(0,201,167,.5));}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-brand">HAL<span>SAA</span></div>
+    <div class="sb-role">Doctor Portal</div>
+  </div>
+  <div class="sb-doc">
+    <div class="sb-doc-av">👨‍⚕️</div>
+    <div>
+      <div class="sb-doc-name">Dr. Ramesh Kumar</div>
+      <div class="sb-doc-spec">MBBS, MD · General Medicine</div>
+      <div class="sb-status" onclick="showToast('Status toggled!')"><div class="live-dot"></div><span class="sb-status-text">AVAILABLE</span></div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Clinic</div>
+    <div class="sb-item active" onclick="showScreen('today');setSb(this)"><div class="sb-icon">🩺</div><div class="sb-lbl">Today's Queue</div><div class="sb-badge">14</div></div>
+    <div class="sb-sec">Insights</div>
+    <div class="sb-item" onclick="showScreen('analytics');setSb(this)"><div class="sb-icon">📊</div><div class="sb-lbl">Analytics</div></div>
+    <div class="sb-sec">Settings</div>
+    <div class="sb-item" onclick="showScreen('availability');setSb(this)"><div class="sb-icon">📅</div><div class="sb-lbl">Schedule & Availability</div></div>
+    <div class="sb-item" onclick="showScreen('profile');setSb(this)"><div class="sb-icon">👤</div><div class="sb-lbl">My Profile</div></div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-today-box">
+      <div class="sb-today-lbl">Today's Progress</div>
+      <div class="sb-today-grid">
+        <div class="sb-today-item"><div class="sb-today-val">38</div><div class="sb-today-sub">Total</div></div>
+        <div class="sb-today-item"><div class="sb-today-val" style="color:var(--teal2);">22</div><div class="sb-today-sub">Done</div></div>
+        <div class="sb-today-item"><div class="sb-today-val" style="color:var(--gold);">14</div><div class="sb-today-sub">Waiting</div></div>
+        <div class="sb-today-item"><div class="sb-today-val">12m</div><div class="sb-today-sub">Avg</div></div>
+      </div>
+    </div>
+    <div class="sb-logout"><span>🚪</span><span>Logout</span></div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-left">
+      <div><div class="tb-title" id="topbar-title">Today's Queue</div><div class="tb-sub">Sri Sai Hospital · Hanamkonda</div></div>
+      <div class="tb-avail"><div class="tb-avail-dot"></div><span class="tb-avail-text">AVAILABLE</span></div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-voice" onclick="showToast('🔊 Voice: Telugu ON')"><span>🔊</span><span class="tb-voice-text">Voice: Telugu ON</span></div>
+      <div class="tb-date">Wed, 11 Mar 2026 · 11:22 AM</div>
+      <div class="tb-notif">🔔<div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ TODAY ══ -->
+    <div class="screen active" id="today">
+      <div class="stats-row">
+        <div class="stat-card" style="animation-delay:.04s"><span class="sc-icon">👥</span><div class="sc-val" style="color:var(--teal)">38</div><div class="sc-lbl">Today Total</div></div>
+        <div class="stat-card" style="animation-delay:.08s"><span class="sc-icon">✅</span><div class="sc-val" style="color:var(--green)">22</div><div class="sc-lbl">Completed</div></div>
+        <div class="stat-card" style="animation-delay:.12s"><span class="sc-icon">⏳</span><div class="sc-val" style="color:var(--gold)">14</div><div class="sc-lbl">Waiting</div></div>
+        <div class="stat-card" style="animation-delay:.16s"><span class="sc-icon">⏱️</span><div class="sc-val" style="color:var(--blue)">12m</div><div class="sc-lbl">Avg Consult</div></div>
+      </div>
+
+      <div class="clinical-layout">
+
+        <!-- Left: Now consulting -->
+        <div class="consult-card">
+          <div class="cc-label"><div class="live-dot"></div>Now Consulting</div>
+          <div class="cc-patient">
+            <div class="cc-av">R</div>
+            <div>
+              <div class="cc-name">Ramesh Kumar</div>
+              <div class="cc-meta">T-026 · 35 yrs · Male · ₹150 Follow-up</div>
+              <div class="cc-tags">
+                <span class="cc-tag">BP Patient</span>
+                <span class="cc-tag gold">3rd Visit</span>
+              </div>
+            </div>
+          </div>
+          <div class="cc-btns">
+            <button class="cc-btn btn-white" onclick="openDetail()">📋 View History</button>
+            <button class="cc-btn btn-gold" onclick="showToast('📝 Prescription opened')">📝 Write Prescription</button>
+            <button class="cc-btn btn-outline" onclick="showToast('🧪 Lab test ordered')">🧪 Order Lab Test</button>
+          </div>
+          <div class="cc-controls">
+            <button class="ctrl-btn ctrl-next" onclick="showToast('▶️ T-027 Priya Reddy — Called!')">▶️ Next</button>
+            <button class="ctrl-btn ctrl-hold" onclick="showToast('⏸ Queue paused')">⏸ Hold</button>
+            <button class="ctrl-btn ctrl-skip" onclick="showToast('⏭ Token skipped')">⏭ Skip</button>
+          </div>
+        </div>
+
+        <!-- Middle: Queue list -->
+        <div class="queue-panel">
+          <div class="qp-header">
+            <div>
+              <div class="qp-title">Today's Queue</div>
+            </div>
+            <div class="qp-count">14 waiting</div>
+            <div class="qp-search" style="margin-left:10px;">🔍 Search...</div>
+          </div>
+          <div class="queue-scroll">
+            <div class="q-card active-now" onclick="openDetail()" style="animation-delay:.04s">
+              <div class="q-num">T-026</div>
+              <div class="q-av av-teal">R</div>
+              <div class="q-info"><div class="q-name">Ramesh Kumar</div><div class="q-meta">35M · Follow-up · 3rd Visit</div></div>
+              <div class="q-right"><span class="q-pill" style="background:rgba(0,201,167,.15);color:var(--teal);">IN ROOM</span><div class="q-type">₹150</div></div>
+            </div>
+            <div class="q-card next" onclick="openDetail()" style="animation-delay:.08s">
+              <div class="q-num">T-027</div>
+              <div class="q-av av-gold">P</div>
+              <div class="q-info"><div class="q-name">Priya Reddy</div><div class="q-meta">28F · Normal · 1st Visit</div></div>
+              <div class="q-right"><span class="q-pill pill-next">NEXT ↑</span><div class="q-type">₹300</div></div>
+            </div>
+            <div class="q-card waiting" onclick="openDetail()" style="animation-delay:.12s">
+              <div class="q-num">T-028</div>
+              <div class="q-av av-teal">V</div>
+              <div class="q-info"><div class="q-name">Venkat Rao</div><div class="q-meta">52M · Senior · 5th Visit</div></div>
+              <div class="q-right"><span class="q-pill pill-wait">Waiting</span><div class="q-type">₹200</div></div>
+            </div>
+            <div class="q-card waiting" onclick="openDetail()" style="animation-delay:.16s">
+              <div class="q-num">T-029</div>
+              <div class="q-av av-gray">K</div>
+              <div class="q-info"><div class="q-name">Kavya Sharma</div><div class="q-meta">24F · Normal · 2nd Visit</div></div>
+              <div class="q-right"><span class="q-pill pill-wait">Waiting</span><div class="q-type">₹300</div></div>
+            </div>
+            <div class="q-card waiting" onclick="openDetail()" style="animation-delay:.2s">
+              <div class="q-num">T-030</div>
+              <div class="q-av av-teal">M</div>
+              <div class="q-info"><div class="q-name">Mahesh Kumar</div><div class="q-meta">44M · Follow-up · 7th Visit</div></div>
+              <div class="q-right"><span class="q-pill pill-wait">Waiting</span><div class="q-type">₹150</div></div>
+            </div>
+            <div class="q-card waiting" onclick="openDetail()" style="animation-delay:.24s">
+              <div class="q-num">T-031</div>
+              <div class="q-av av-gray">S</div>
+              <div class="q-info"><div class="q-name">Sunitha Rao</div><div class="q-meta">38F · Normal · 1st Visit</div></div>
+              <div class="q-right"><span class="q-pill pill-wait">Waiting</span><div class="q-type">₹300</div></div>
+            </div>
+            <div class="q-card waiting" onclick="openDetail()" style="animation-delay:.28s">
+              <div class="q-num">T-032</div>
+              <div class="q-av av-gold">A</div>
+              <div class="q-info"><div class="q-name">Arun Reddy</div><div class="q-meta">60M · Senior · 10th Visit</div></div>
+              <div class="q-right"><span class="q-pill pill-wait">Waiting</span><div class="q-type">₹200</div></div>
+            </div>
+            <div class="q-card waiting" onclick="openDetail()" style="animation-delay:.32s">
+              <div class="q-num">T-033</div>
+              <div class="q-av av-gray">L</div>
+              <div class="q-info"><div class="q-name">Lakshmi Devi</div><div class="q-meta">45F · Normal · 4th Visit</div></div>
+              <div class="q-right"><span class="q-pill pill-wait">Waiting</span><div class="q-type">₹300</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Patient detail -->
+        <div class="detail-panel" id="detailPanel">
+          <div class="dp-header">
+            <div class="dp-av">R</div>
+            <div class="dp-name">Ramesh Kumar</div>
+            <div class="dp-token">T-026</div>
+            <div class="dp-meta">35 yrs · Male · +91 98765 43210</div>
+          </div>
+          <div class="dp-body">
+            <div class="dp-info-grid">
+              <div class="dp-info-item"><div class="dp-info-lbl">Visit Type</div><div class="dp-info-val">Follow-up</div></div>
+              <div class="dp-info-item"><div class="dp-info-lbl">Fee</div><div class="dp-info-val">₹150</div></div>
+              <div class="dp-info-item"><div class="dp-info-lbl">Total Visits</div><div class="dp-info-val">3rd Visit</div></div>
+              <div class="dp-info-item"><div class="dp-info-lbl">Last Visit</div><div class="dp-info-val">5 Nov 2025</div></div>
+            </div>
+            <div class="dp-sec-title">Last Known Vitals</div>
+            <div class="vitals-row">
+              <div class="vital-chip"><div class="vital-val">140/90</div><div class="vital-lbl">BP mmHg</div></div>
+              <div class="vital-chip"><div class="vital-val">98°F</div><div class="vital-lbl">Temp</div></div>
+              <div class="vital-chip"><div class="vital-val">72 bpm</div><div class="vital-lbl">Pulse</div></div>
+            </div>
+            <div class="dp-sec-title">Visit History</div>
+            <div class="dp-visit-row"><span class="dp-visit-date">5 Nov 2025 · Normal · BP check</span><span class="dp-visit-fee">₹300</span></div>
+            <div class="dp-visit-row"><span class="dp-visit-date">12 Oct 2025 · Normal · Fever</span><span class="dp-visit-fee">₹300</span></div>
+            <div class="dp-visit-row"><span class="dp-visit-date">3 Sep 2025 · Normal</span><span class="dp-visit-fee">₹300</span></div>
+            <div class="dp-actions">
+              <button class="dp-btn dp-btn-teal" onclick="showToast('📝 Prescription opened')">📝 Write Prescription</button>
+              <button class="dp-btn dp-btn-gold" onclick="showToast('🧪 Lab test ordered')">🧪 Order Lab Test</button>
+              <button class="dp-btn dp-btn-green" onclick="showToast('✅ Done! T-027 Priya Reddy — Called!')">✅ Done — Call Next</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ ANALYTICS ══ -->
+    <div class="screen" id="analytics">
+      <div class="period-tabs">
+        <button class="period-tab active" onclick="switchPeriod(this)">Today</button>
+        <button class="period-tab" onclick="switchPeriod(this)">This Week</button>
+        <button class="period-tab" onclick="switchPeriod(this)">This Month</button>
+      </div>
+      <div class="analytics-top">
+        <div class="stat-card" style="animation-delay:.04s"><span class="sc-icon">👥</span><div class="sc-val" style="color:var(--teal)">38</div><div class="sc-lbl">Patients Today</div></div>
+        <div class="stat-card" style="animation-delay:.08s"><span class="sc-icon">✅</span><div class="sc-val" style="color:var(--green)">22</div><div class="sc-lbl">Completed</div></div>
+        <div class="stat-card" style="animation-delay:.12s"><span class="sc-icon">⏱️</span><div class="sc-val" style="color:var(--gold)">12m</div><div class="sc-lbl">Avg Consult</div></div>
+        <div class="stat-card" style="animation-delay:.16s"><span class="sc-icon">🔁</span><div class="sc-val" style="color:var(--blue)">68%</div><div class="sc-lbl">Return Rate</div></div>
+      </div>
+      <div class="analytics-layout">
+        <div>
+          <div class="a-card">
+            <div class="a-card-title">Patients This Week</div>
+            <div class="bar-chart" id="barChart"></div>
+            <div style="display:flex;gap:10px;" id="barLabels"></div>
+          </div>
+          <div class="a-card">
+            <div class="a-card-title">Peak Hours Today</div>
+            <div class="stat-rows">
+              <div class="stat-row"><div class="sr-label"><div class="sr-dot" style="background:var(--teal)"></div>🌅 Morning (9–11 AM)</div><div style="display:flex;align-items:center;gap:10px;"><div class="sr-bar-wrap"><div class="sr-bar" style="width:72%;background:var(--teal);"></div></div><div class="sr-val" style="color:var(--teal)">16</div></div></div>
+              <div class="stat-row"><div class="sr-label"><div class="sr-dot" style="background:var(--gold)"></div>☀️ Noon (11 AM–1 PM)</div><div style="display:flex;align-items:center;gap:10px;"><div class="sr-bar-wrap"><div class="sr-bar" style="width:63%;background:var(--gold);"></div></div><div class="sr-val" style="color:var(--gold)">14</div></div></div>
+              <div class="stat-row"><div class="sr-label"><div class="sr-dot" style="background:var(--blue)"></div>🌆 Evening (4–7 PM)</div><div style="display:flex;align-items:center;gap:10px;"><div class="sr-bar-wrap"><div class="sr-bar" style="width:36%;background:var(--blue);"></div></div><div class="sr-val" style="color:var(--blue)">8</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="a-card">
+            <div class="a-card-title">Visit Type Breakdown</div>
+            <div class="stat-rows">
+              <div class="stat-row"><div class="sr-label"><div class="sr-dot" style="background:var(--teal)"></div>Normal</div><div class="sr-val" style="color:var(--teal)">18 <span style="font-size:.65rem;font-weight:600;color:var(--muted)">47%</span></div></div>
+              <div class="stat-row"><div class="sr-label"><div class="sr-dot" style="background:var(--gold)"></div>Follow-up</div><div class="sr-val" style="color:var(--gold)">12 <span style="font-size:.65rem;font-weight:600;color:var(--muted)">32%</span></div></div>
+              <div class="stat-row"><div class="sr-label"><div class="sr-dot" style="background:var(--blue)"></div>Senior</div><div class="sr-val" style="color:var(--blue)">8 <span style="font-size:.65rem;font-weight:600;color:var(--muted)">21%</span></div></div>
+            </div>
+          </div>
+          <div class="a-card">
+            <div class="a-card-title">All-Time Stats</div>
+            <div class="stat-rows">
+              <div class="stat-row"><div class="sr-label">Total Patients</div><div class="sr-val" style="color:var(--teal)">1,240</div></div>
+              <div class="stat-row"><div class="sr-label">Patient Rating</div><div class="sr-val" style="color:var(--gold)">4.9 ⭐</div></div>
+              <div class="stat-row"><div class="sr-label">On HALSAA</div><div class="sr-val" style="color:var(--green)">3 yrs</div></div>
+              <div class="stat-row"><div class="sr-label">Avg Daily Load</div><div class="sr-val" style="color:var(--blue)">32</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ AVAILABILITY ══ -->
+    <div class="screen" id="availability">
+      <div style="margin-bottom:20px;"><div style="font-size:1rem;font-weight:800;color:var(--text);">Schedule & Availability</div><div style="font-size:.7rem;color:var(--muted);">Manage your working days, hours and queue controls</div></div>
+      <div class="avail-layout">
+        <div>
+          <div class="a-card">
+            <div class="a-card-title">Quick Controls</div>
+            <div class="toggle-row"><div class="tr-info"><div class="tr-label">Available Today</div><div class="tr-sub">Patients can book tokens</div></div><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+            <div class="toggle-row"><div class="tr-info"><div class="tr-label">Voice Announcements</div><div class="tr-sub">Auto-call next patient in Telugu</div></div><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+            <div class="toggle-row"><div class="tr-info"><div class="tr-label">TV Display Mode</div><div class="tr-sub">Show queue on clinic TV screen</div></div><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+            <div class="toggle-row"><div class="tr-info"><div class="tr-label">WhatsApp Notifications</div><div class="tr-sub">Auto-send alerts to patients</div></div><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+          </div>
+          <div class="a-card">
+            <div class="a-card-title">Working Days</div>
+            <div class="day-grid">
+              <div class="day-chip active" onclick="toggleDay(this)"><div class="day-name">MON</div></div>
+              <div class="day-chip active" onclick="toggleDay(this)"><div class="day-name">TUE</div></div>
+              <div class="day-chip active" onclick="toggleDay(this)"><div class="day-name">WED</div></div>
+              <div class="day-chip active" onclick="toggleDay(this)"><div class="day-name">THU</div></div>
+              <div class="day-chip active" onclick="toggleDay(this)"><div class="day-name">FRI</div></div>
+              <div class="day-chip active" onclick="toggleDay(this)"><div class="day-name">SAT</div></div>
+              <div class="day-chip" onclick="toggleDay(this)"><div class="day-name">SUN</div></div>
+            </div>
+            <div class="time-grid">
+              <div><div class="time-lbl">Morning Start</div><input class="time-input" type="time" value="09:00"/></div>
+              <div><div class="time-lbl">Morning End</div><input class="time-input" type="time" value="13:00"/></div>
+              <div><div class="time-lbl">Evening Start</div><input class="time-input" type="time" value="17:00"/></div>
+              <div><div class="time-lbl">Evening End</div><input class="time-input" type="time" value="20:00"/></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="a-card">
+            <div class="a-card-title">Queue Actions</div>
+            <button class="leave-btn" onclick="showToast('🔴 Queue closed for today!')">🔴 Close Queue for Today</button>
+            <button class="resume-btn" onclick="showToast('✅ Queue resumed!')">✅ Resume Queue Now</button>
+            <div style="margin-top:14px;background:var(--teal-light);border-radius:12px;padding:14px;font-size:.72rem;color:var(--teal);font-weight:600;line-height:1.7;">
+              💡 Closing the queue stops new bookings. Patients already in queue will still be served.
+            </div>
+          </div>
+          <div class="a-card">
+            <div class="a-card-title">Consultation Fee Settings</div>
+            <div class="stat-rows">
+              <div class="stat-row"><div class="sr-label">Normal Consultation</div><div class="sr-val" style="color:var(--teal)">₹300</div></div>
+              <div class="stat-row"><div class="sr-label">Follow-up Visit</div><div class="sr-val" style="color:var(--gold)">₹150</div></div>
+              <div class="stat-row"><div class="sr-label">Senior Citizen</div><div class="sr-val" style="color:var(--blue)">₹200</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PROFILE ══ -->
+    <div class="screen" id="profile">
+      <div style="margin-bottom:20px;"><div style="font-size:1rem;font-weight:800;color:var(--text);">My Profile</div><div style="font-size:.7rem;color:var(--muted);">Manage your doctor account</div></div>
+      <div class="profile-layout">
+        <div>
+          <div class="profile-card">
+            <div class="pc-head">
+              <div class="pc-av">👨‍⚕️</div>
+              <div class="pc-name">Dr. Ramesh Kumar</div>
+              <div class="pc-spec">MBBS, MD — General Medicine</div>
+            </div>
+            <div class="pc-stats">
+              <div class="pcs-item"><div class="pcs-val">1,240</div><div class="pcs-lbl">Patients</div></div>
+              <div class="pcs-item"><div class="pcs-val" style="color:var(--gold)">4.9⭐</div><div class="pcs-lbl">Rating</div></div>
+              <div class="pcs-item"><div class="pcs-val" style="color:var(--green)">3 yrs</div><div class="pcs-lbl">HALSAA</div></div>
+            </div>
+          </div>
+          <div class="prof-section">
+            <div class="prof-sec-hdr">Account</div>
+            <div class="prof-item" style="cursor:pointer;" onclick="showToast('❓ Help opened')"><span class="prof-item-label">❓ Help & Support</span><span class="prof-item-teal">›</span></div>
+            <div class="prof-item" style="cursor:pointer;" onclick="showToast('👋 Logged out!')"><span class="prof-item-label" style="color:var(--red)">🚪 Logout</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="prof-section" style="margin-bottom:16px;">
+            <div class="prof-sec-hdr">Clinic Information</div>
+            <div class="prof-item"><span class="prof-item-label">Clinic Name</span><span class="prof-item-val">Sri Sai Hospital</span></div>
+            <div class="prof-item"><span class="prof-item-label">Location</span><span class="prof-item-val">Hanamkonda, Warangal</span></div>
+            <div class="prof-item"><span class="prof-item-label">Specialization</span><span class="prof-item-val">General Medicine</span></div>
+            <div class="prof-item"><span class="prof-item-label">Normal Fee</span><span class="prof-item-val">₹300</span></div>
+            <div class="prof-item"><span class="prof-item-label">Follow-up Fee</span><span class="prof-item-val">₹150</span></div>
+          </div>
+          <div class="prof-section">
+            <div class="prof-sec-hdr">Personal Details</div>
+            <div class="prof-item"><span class="prof-item-label">Full Name</span><span class="prof-item-val">Dr. Ramesh Kumar</span></div>
+            <div class="prof-item"><span class="prof-item-label">Qualification</span><span class="prof-item-val">MBBS, MD</span></div>
+            <div class="prof-item"><span class="prof-item-label">Mobile</span><span class="prof-item-val">+91 98765 43210</span></div>
+            <div class="prof-item"><span class="prof-item-label">Reg. Number</span><span class="prof-item-val">MCI-2024-789456</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+const titleMap={today:"Today's Queue",analytics:'Analytics',availability:'Schedule & Availability',profile:'My Profile'};
+function showScreen(id){
+  const mnItems=document.querySelectorAll('.mn-item');
+  mnItems.forEach((it,i)=>{
+    const sc=it.getAttribute('onclick');
+    if(sc&&sc.includes("'"+id+"'"))it.classList.add('active');
+    else it.classList.remove('active');
+  });
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('topbar-title').textContent=titleMap[id]||id;
+  window.scrollTo(0,0);
+}
+function setMobileNav(el){document.querySelectorAll(".mn-item").forEach(i=>i.classList.remove("active"));if(el)el.classList.add("active");}
+function setSb(el){document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');}
+function openDetail(){showToast('📋 Patient history loaded');}
+function toggleSwitch(el){el.classList.toggle('on');showToast(el.classList.contains('on')?'✅ Turned ON':'🔴 Turned OFF');}
+function toggleDay(el){el.classList.toggle('active');}
+function switchPeriod(el){document.querySelectorAll('.period-tab').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
+
+// Build bar chart
+window.addEventListener('DOMContentLoaded',()=>{
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const vals=[32,28,38,25,41,18,12];
+  const max=Math.max(...vals);
+  const chart=document.getElementById('barChart');
+  const labels=document.getElementById('barLabels');
+  if(!chart) return;
+  days.forEach((d,i)=>{
+    const wrap=document.createElement('div');wrap.className='bar-wrap';
+    const bar=document.createElement('div');
+    bar.className='bar'+(i===2?' highlight':'');
+    bar.style.height=(vals[i]/max*100+10)+'px';
+    bar.innerHTML=`<span class="bar-val">${vals[i]}</span>`;
+    wrap.appendChild(bar);chart.appendChild(wrap);
+    const l=document.createElement('div');l.className='bar-wrap';l.innerHTML=`<div class="bar-label">${d}</div>`;
+    labels.appendChild(l);
+  });
+});
+
+let tt;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2500);}
+</script>
+
+<nav class="mobile-nav" id="mobileNav">
+  <div class="mn-item active" onclick="showScreen('queue');setMobileNav(this)"><div class="mn-icon">🏠</div><div class="mn-label">Queue</div></div>
+  <div class="mn-item" onclick="showScreen('analytics');setMobileNav(this)"><div class="mn-icon">📊</div><div class="mn-label">Analytics</div></div>
+  <div class="mn-item" onclick="showScreen('schedule');setMobileNav(this)"><div class="mn-icon">📅</div><div class="mn-label">Schedule</div></div>
+  <div class="mn-item" onclick="showScreen('profile');setMobileNav(this)"><div class="mn-icon">👤</div><div class="mn-label">Profile</div></div>
+</nav>
+</body>
+</html>

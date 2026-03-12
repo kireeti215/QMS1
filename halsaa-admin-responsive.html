@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>HALSAA — Clinic Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --teal:#00C9A7;--teal2:#00E8C0;--teal-light:#E6FAF6;--teal-mid:rgba(0,201,167,0.12);
+  --gold:#FFB347;--gold-light:#FFF4E6;--gold2:#FFC86B;
+  --bg:#F4FDFB;--card:#fff;--text:#1A2E2A;--muted:#7A9E98;
+  --border:rgba(0,201,167,0.15);--shadow:0 4px 20px rgba(0,201,167,0.10);--shadow2:0 2px 12px rgba(0,0,0,0.06);
+  --red:#FF6B6B;--green:#00C853;--blue:#3B82F6;--purple:#8B5CF6;--sidebar:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+button,input,select{font-family:'Poppins',sans-serif;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,201,167,0.4)}50%{box-shadow:0 0 0 8px rgba(0,201,167,0)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+
+.app{display:flex;min-height:100vh;}
+
+/* ══ SIDEBAR ══ */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:linear-gradient(180deg,#003D33 0%,#007A66 55%,var(--teal) 100%);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:100;
+  box-shadow:4px 0 24px rgba(0,0,0,0.14);
+}
+.sb-logo{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-brand{font-size:1.45rem;font-weight:900;color:#fff;letter-spacing:.01em;}
+.sb-brand span{color:var(--gold);}
+.sb-role{font-size:.54rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:3px;}
+
+.sb-clinic{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px;}
+.sb-clinic-icon{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.sb-cname{font-size:.8rem;font-weight:800;color:#fff;}
+.sb-cloc{font-size:.58rem;color:rgba(255,255,255,.5);}
+.sb-open{display:flex;align-items:center;gap:5px;background:rgba(0,200,83,.2);border:1px solid rgba(0,200,83,.3);border-radius:100px;padding:3px 10px;margin-top:4px;width:fit-content;}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;flex-shrink:0;}
+.sb-open-text{font-size:.55rem;font-weight:800;color:#00F065;}
+
+.sb-nav{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:2px;}
+.sb-sec{font-size:.54rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:10px 12px 4px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:all .2s;border:1px solid transparent;}
+.sb-item:hover{background:rgba(255,255,255,.08);}
+.sb-item.active{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.1);}
+.sb-icon{font-size:1rem;width:22px;text-align:center;flex-shrink:0;}
+.sb-lbl{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.6);}
+.sb-item.active .sb-lbl{color:#fff;}
+.sb-badge{margin-left:auto;background:var(--gold);color:#fff;font-size:.5rem;font-weight:800;padding:2px 6px;border-radius:100px;}
+
+.sb-bottom{padding:14px 12px;}
+.sb-rev-box{background:rgba(255,179,71,.18);border:1px solid rgba(255,179,71,.25);border-radius:12px;padding:12px;margin-bottom:10px;}
+.sb-rev-lbl{font-size:.55rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,179,71,.8);margin-bottom:5px;}
+.sb-rev-amt{font-size:1.4rem;font-weight:900;color:var(--gold);line-height:1;}
+.sb-rev-sub{font-size:.58rem;color:rgba(255,255,255,.4);margin-top:2px;}
+.sb-logout{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;cursor:pointer;transition:background .2s;}
+.sb-logout:hover{background:rgba(255,107,107,.12);}
+.sb-logout span{font-size:.73rem;font-weight:600;color:rgba(255,255,255,.4);}
+
+/* ══ MAIN ══ */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ══ TOPBAR ══ */
+.topbar{
+  background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 12px rgba(0,201,167,.06);
+}
+.tb-left{display:flex;align-items:center;gap:14px;}
+.tb-title{font-size:.95rem;font-weight:800;color:var(--text);}
+.tb-sub{font-size:.65rem;color:var(--muted);}
+.tb-live{display:flex;align-items:center;gap:5px;background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.2);border-radius:100px;padding:4px 12px;}
+.tb-live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;}
+.tb-live-text{font-size:.62rem;font-weight:800;color:var(--green);}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-date{font-size:.68rem;color:var(--muted);font-weight:600;}
+.tb-qr{display:flex;align-items:center;gap:6px;background:var(--teal-light);border:1px solid var(--border);border-radius:100px;padding:5px 14px;cursor:pointer;}
+.tb-qr-text{font-size:.62rem;font-weight:800;color:var(--teal);}
+.tb-notif{width:36px;height:36px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;}
+.notif-dot{position:absolute;top:7px;right:7px;width:6px;height:6px;background:var(--gold);border-radius:50%;border:2px solid #fff;}
+
+/* ══ CONTENT ══ */
+.content{padding:20px 24px;flex:1;}
+.screen{display:none;animation:fadeUp .3s ease both;}
+.screen.active{display:block;}
+
+/* stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--card);border-radius:16px;padding:16px 18px;border:1.5px solid var(--border);box-shadow:var(--shadow2);animation:fadeUp .4s ease both;}
+.sc-icon{font-size:1.4rem;margin-bottom:6px;display:block;}
+.sc-val{font-size:1.8rem;font-weight:900;line-height:1;margin-bottom:3px;}
+.sc-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+
+/* ══ HOME SCREEN ══ */
+.home-layout{display:grid;grid-template-columns:1fr 320px;gap:18px;}
+
+/* Revenue hero */
+.rev-hero{background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:20px;padding:22px;position:relative;overflow:hidden;margin-bottom:16px;box-shadow:0 8px 32px rgba(255,179,71,.25);}
+.rev-hero::before{content:'';position:absolute;top:-25px;right:-25px;width:120px;height:120px;background:rgba(255,255,255,.1);border-radius:50%;}
+.rev-hero::after{content:'';position:absolute;bottom:-15px;left:-15px;width:80px;height:80px;background:rgba(255,255,255,.07);border-radius:50%;}
+.rh-label{font-size:.6rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.75);margin-bottom:6px;position:relative;z-index:1;}
+.rh-amount{font-size:2.4rem;font-weight:900;color:#fff;letter-spacing:-.02em;margin-bottom:3px;position:relative;z-index:1;}
+.rh-sub{font-size:.68rem;color:rgba(255,255,255,.75);position:relative;z-index:1;margin-bottom:14px;}
+.rh-chips{display:flex;gap:10px;position:relative;z-index:1;}
+.rh-chip{flex:1;background:rgba(255,255,255,.22);border-radius:12px;padding:11px 8px;text-align:center;}
+.rh-chip-val{font-size:.95rem;font-weight:800;color:#fff;}
+.rh-chip-lbl{font-size:.55rem;color:rgba(255,255,255,.75);margin-top:2px;}
+
+/* Quick actions */
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.qa-card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow2);cursor:pointer;transition:all .2s;animation:fadeUp .4s ease both;border:1.5px solid transparent;}
+.qa-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.qa-card.teal{border-color:var(--border);background:linear-gradient(135deg,var(--teal-light),#fff);}
+.qa-card.gold{border-color:rgba(255,179,71,.2);background:linear-gradient(135deg,var(--gold-light),#fff);}
+.qa-card.red{border-color:rgba(255,107,107,.15);background:linear-gradient(135deg,rgba(255,107,107,.06),#fff);}
+.qa-card.purple{border-color:rgba(139,92,246,.15);background:linear-gradient(135deg,rgba(139,92,246,.06),#fff);}
+.qa-icon{font-size:1.6rem;margin-bottom:8px;display:block;}
+.qa-title{font-size:.85rem;font-weight:800;color:var(--text);margin-bottom:2px;}
+.qa-sub{font-size:.62rem;color:var(--muted);}
+
+/* Right side panel */
+.right-panel{display:flex;flex-direction:column;gap:14px;}
+.panel-card{background:var(--card);border-radius:18px;padding:18px;box-shadow:var(--shadow2);border:1px solid var(--border);}
+.panel-title{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+
+/* Live status rows */
+.status-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F8F8F8;}
+.status-row:last-child{border-bottom:none;}
+.sr-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
+.icon-teal-sm{background:var(--teal-light);}
+.icon-gold-sm{background:var(--gold-light);}
+.icon-red-sm{background:rgba(255,107,107,.1);}
+.sr-lbl{flex:1;font-size:.78rem;font-weight:600;color:var(--text);}
+.sr-val{font-size:.72rem;font-weight:700;}
+
+/* Doctor cards */
+.doc-card{background:var(--bg);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:8px;border-left:4px solid transparent;transition:all .2s;animation:slideIn .35s ease both;}
+.doc-card:hover{background:#F0FAF8;}
+.doc-card.available{border-left-color:var(--teal);}
+.doc-card.busy{border-left-color:var(--gold);}
+.doc-card.off{border-left-color:#E0E0E0;}
+.doc-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
+.av-teal{background:var(--teal-light);}
+.av-gold{background:var(--gold-light);}
+.av-gray{background:#F5F5F5;}
+.doc-name{font-size:.8rem;font-weight:700;color:var(--text);}
+.doc-spec{font-size:.6rem;color:var(--muted);margin-top:1px;}
+.doc-status{font-size:.56rem;font-weight:700;padding:2px 8px;border-radius:100px;white-space:nowrap;}
+.st-available{background:rgba(0,200,83,.1);color:var(--green);}
+.st-busy{background:rgba(255,179,71,.15);color:#CC7A00;}
+.st-off{background:#F0F0F0;color:var(--muted);}
+.doc-patients{font-size:.58rem;color:var(--muted);margin-top:2px;}
+
+/* ══ ANALYTICS SCREEN ══ */
+.period-tabs{display:flex;gap:8px;margin-bottom:18px;}
+.period-tab{padding:7px 18px;border-radius:100px;font-size:.72rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all .2s;}
+.period-tab.active{background:var(--teal);border-color:var(--teal);color:#fff;}
+.analytics-layout{display:grid;grid-template-columns:1fr 300px;gap:18px;}
+.a-card{background:var(--card);border-radius:18px;padding:20px;border:1px solid var(--border);box-shadow:var(--shadow2);margin-bottom:16px;}
+.a-card-title{font-size:.64rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+.rev-cards-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.rc{background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow2);border:1px solid var(--border);}
+.rc-icon{font-size:1.2rem;margin-bottom:6px;display:block;}
+.rc-val{font-size:1.4rem;font-weight:800;margin-bottom:2px;}
+.rc-lbl{font-size:.6rem;color:var(--muted);}
+.bar-chart{display:flex;align-items:flex-end;gap:10px;height:120px;margin-bottom:8px;}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bar{width:100%;border-radius:6px 6px 0 0;background:var(--teal-mid);position:relative;min-height:4px;}
+.bar.hl{background:var(--teal);}
+.bar-v{font-size:.56rem;font-weight:800;color:var(--teal);position:absolute;top:-16px;left:50%;transform:translateX(-50%);white-space:nowrap;}
+.bar-lbl{font-size:.58rem;color:var(--muted);}
+.bk-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #F8F8F8;}
+.bk-row:last-child{border-bottom:none;}
+.bk-left{display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:600;}
+.bk-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.bk-val{font-size:.85rem;font-weight:800;}
+.bk-bar-wrap{flex:1;height:6px;background:#F0F0F0;border-radius:3px;margin:0 14px;}
+.bk-bar{height:6px;border-radius:3px;}
+
+/* HALSAA billing */
+.bill-card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow2);border:1px solid var(--border);margin-bottom:10px;}
+.bc-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.bc-month{font-size:.88rem;font-weight:800;color:var(--text);}
+.bc-patients{font-size:.65rem;color:var(--muted);margin-top:2px;}
+.bc-amt{font-size:1rem;font-weight:900;color:var(--teal);}
+.bc-status{font-size:.6rem;font-weight:800;padding:3px 9px;border-radius:100px;margin-top:3px;display:inline-block;}
+.bc-paid{background:rgba(0,200,83,.1);color:var(--green);}
+.bc-pending{background:rgba(255,179,71,.15);color:#CC7A00;}
+.bc-actions{display:flex;gap:8px;}
+.bca-btn{flex:1;padding:9px;border-radius:10px;border:none;font-size:.7rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.bca-btn:hover{opacity:.85;}
+.bca-teal{background:var(--teal-light);color:var(--teal);}
+.bca-gold{background:var(--gold-light);color:#CC7A00;}
+.bca-green{background:rgba(0,200,83,.1);color:var(--green);}
+
+/* ══ STAFF SCREEN ══ */
+.staff-layout{display:grid;grid-template-columns:1fr 300px;gap:18px;}
+.staff-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.staff-header-info{font-size:1rem;font-weight:800;color:var(--text);}
+.staff-header-sub{font-size:.7rem;color:var(--muted);}
+.add-btn{display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;border:none;border-radius:12px;padding:10px 18px;font-size:.78rem;font-weight:800;cursor:pointer;transition:opacity .2s;}
+.add-btn:hover{opacity:.88;}
+.staff-card{background:var(--card);border-radius:16px;padding:14px;box-shadow:var(--shadow2);border:1px solid var(--border);display:flex;align-items:center;gap:12px;margin-bottom:10px;animation:slideIn .35s ease both;}
+.staff-card:hover{transform:translateY(-1px);box-shadow:var(--shadow);}
+.staff-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;flex-shrink:0;}
+.staff-name{font-size:.88rem;font-weight:800;color:var(--text);}
+.staff-role{font-size:.63rem;color:var(--muted);margin-top:2px;}
+.staff-status{font-size:.6rem;font-weight:700;padding:3px 9px;border-radius:100px;}
+.staff-actions{display:flex;gap:6px;margin-left:auto;}
+.sab{padding:6px 12px;border-radius:8px;border:none;font-size:.65rem;font-weight:700;cursor:pointer;}
+.sab-edit{background:var(--teal-light);color:var(--teal);}
+.sab-del{background:rgba(255,107,107,.1);color:var(--red);}
+
+/* Add staff form panel */
+.add-staff-panel{background:var(--card);border-radius:18px;padding:20px;box-shadow:var(--shadow2);border:1px solid var(--border);position:sticky;top:80px;}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:.7rem;font-weight:700;color:var(--text);margin-bottom:6px;display:block;}
+.form-input{width:100%;padding:11px 14px;border:1.5px solid #E0EEE8;border-radius:11px;font-size:.85rem;color:var(--text);outline:none;transition:border .2s;background:#FAFFFE;}
+.form-input:focus{border-color:var(--teal);}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.role-chip{padding:12px 8px;border-radius:12px;border:1.5px solid #E0EEE8;text-align:center;cursor:pointer;transition:all .2s;}
+.role-chip.sel{border-color:var(--teal);background:var(--teal-light);}
+.role-chip-icon{font-size:1.1rem;margin-bottom:4px;}
+.role-chip-label{font-size:.66rem;font-weight:700;color:var(--muted);}
+.role-chip.sel .role-chip-label{color:var(--teal);}
+.save-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;border:none;border-radius:12px;font-size:.85rem;font-weight:800;cursor:pointer;}
+
+/* ══ SETTINGS SCREEN ══ */
+.settings-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.settings-section{background:var(--card);border-radius:18px;box-shadow:var(--shadow2);border:1px solid var(--border);overflow:hidden;margin-bottom:16px;}
+.ss-hdr{padding:14px 18px;border-bottom:1px solid #F5F5F5;font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.setting-row{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid #F8F8F8;cursor:pointer;transition:background .15s;}
+.setting-row:last-child{border-bottom:none;}
+.setting-row:hover{background:#FAFFFE;}
+.srow-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.ico-teal{background:var(--teal-light);}
+.ico-gold{background:var(--gold-light);}
+.ico-red{background:rgba(255,107,107,.1);}
+.ico-purple{background:rgba(139,92,246,.1);}
+.ico-green{background:rgba(0,200,83,.1);}
+.srow-text{flex:1;}
+.srow-title{font-size:.82rem;font-weight:700;color:var(--text);}
+.srow-sub{font-size:.62rem;color:var(--muted);margin-top:1px;}
+.srow-right{display:flex;align-items:center;gap:8px;}
+.srow-val{font-size:.72rem;font-weight:700;color:var(--teal);}
+.srow-arrow{color:var(--muted);}
+.toggle{width:44px;height:24px;border-radius:12px;background:#E0E0E0;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--teal);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.15);}
+.toggle.on::after{transform:translateX(20px);}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#1A2E2A;color:#fff;padding:11px 22px;border-radius:100px;font-size:.78rem;font-weight:700;z-index:999;display:none;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.2);}
+.toast.show{display:block;animation:toastIn .3s ease;}
+
+@media(max-width:900px){.sidebar{display:none;}.main{margin-left:0;}.stats-row,.rev-cards-row{grid-template-columns:repeat(2,1fr);}.home-layout,.analytics-layout,.staff-layout,.settings-layout{grid-template-columns:1fr;}}
+
+/* ══ MOBILE RESPONSIVE ══ */
+@media(max-width:768px){
+  .sidebar{display:none !important;}
+  .main{margin-left:0 !important;}
+  .content{padding:14px 14px 90px !important;}
+  .topbar{padding:0 14px !important;height:52px !important;}
+  .tb-search,.tb-date{display:none !important;}
+  .stats-row,.rev-cards-row,.kpi-row{grid-template-columns:repeat(2,1fr) !important;}
+  .two-col,.tracker-layout,.profile-layout,.analytics-layout,.home-layout,.staff-layout,.settings-layout,.billing-layout,.alerts-layout,.overview-layout{grid-template-columns:1fr !important;}
+  .three-col,.clinic-grid{grid-template-columns:1fr !important;}
+  .qa-grid,.quick-grid{grid-template-columns:repeat(2,1fr) !important;}
+  .history-grid,.rev-cards,.kpi-grid{grid-template-columns:1fr !important;}
+  .right-panel,.add-staff-panel{display:none !important;}
+  .mobile-nav{display:none;display:flex !important;}
+}
+.mobile-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid #E8F5F2;
+  padding:8px 0 20px;
+  grid-template-columns:repeat(4,1fr);
+  box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+  z-index:200;
+}
+.mn-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 2px;}
+.mn-icon{font-size:1.2rem;}
+.mn-label{font-size:.5rem;font-weight:700;color:#7A9E98;}
+.mn-item.active .mn-label{color:#00C9A7;}
+.mn-item.active .mn-icon{filter:drop-shadow(0 0 3px rgba(0,201,167,.5));}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-brand">HAL<span>SAA</span></div>
+    <div class="sb-role">Clinic Admin Portal</div>
+  </div>
+  <div class="sb-clinic">
+    <div class="sb-clinic-icon">🏥</div>
+    <div>
+      <div class="sb-cname">Sri Sai Hospital</div>
+      <div class="sb-cloc">Hanamkonda, Warangal</div>
+      <div class="sb-open"><div class="live-dot"></div><span class="sb-open-text">CLINIC OPEN</span></div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Overview</div>
+    <div class="sb-item active" onclick="showScreen('home');setSb(this)"><div class="sb-icon">🏠</div><div class="sb-lbl">Dashboard</div></div>
+    <div class="sb-sec">Business</div>
+    <div class="sb-item" onclick="showScreen('analytics');setSb(this)"><div class="sb-icon">📊</div><div class="sb-lbl">Analytics & Revenue</div></div>
+    <div class="sb-sec">Management</div>
+    <div class="sb-item" onclick="showScreen('staff');setSb(this)"><div class="sb-icon">👥</div><div class="sb-lbl">Staff Management</div><div class="sb-badge">6</div></div>
+    <div class="sb-item" onclick="showScreen('settings');setSb(this)"><div class="sb-icon">⚙️</div><div class="sb-lbl">Clinic Settings</div></div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-rev-box">
+      <div class="sb-rev-lbl">💰 Today's Revenue</div>
+      <div class="sb-rev-amt">₹7,800</div>
+      <div class="sb-rev-sub">+12% vs last week</div>
+    </div>
+    <div class="sb-logout"><span>🚪</span><span>Logout</span></div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <div><div class="tb-title" id="topbar-title">Dashboard</div><div class="tb-sub">Sri Sai Hospital · Dr. Venkat Rao</div></div>
+      <div class="tb-live"><div class="tb-live-dot"></div><span class="tb-live-text">CLINIC OPEN</span></div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-qr" onclick="showToast('📲 QR Code opened — Share to patients!')"><span>📲</span><span class="tb-qr-text">Share QR Code</span></div>
+      <div class="tb-date">Wed, 11 Mar 2026 · 11:30 AM</div>
+      <div class="tb-notif">🔔<div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ HOME ══ -->
+    <div class="screen active" id="home">
+      <div class="stats-row">
+        <div class="stat-card" style="animation-delay:.04s"><span class="sc-icon">👥</span><div class="sc-val" style="color:var(--teal)">42</div><div class="sc-lbl">Patients Today</div></div>
+        <div class="stat-card" style="animation-delay:.08s"><span class="sc-icon">✅</span><div class="sc-val" style="color:var(--green)">26</div><div class="sc-lbl">Completed</div></div>
+        <div class="stat-card" style="animation-delay:.12s"><span class="sc-icon">⏳</span><div class="sc-val" style="color:var(--gold)">14</div><div class="sc-lbl">Waiting</div></div>
+        <div class="stat-card" style="animation-delay:.16s"><span class="sc-icon">❌</span><div class="sc-val" style="color:var(--red)">2</div><div class="sc-lbl">No-show</div></div>
+      </div>
+
+      <div class="home-layout">
+        <div>
+          <div class="rev-hero">
+            <div class="rh-label">💰 Today's Revenue</div>
+            <div class="rh-amount">₹7,800</div>
+            <div class="rh-sub">Consultation fees · HALSAA fee collected separately</div>
+            <div class="rh-chips">
+              <div class="rh-chip"><div class="rh-chip-val">₹5,400</div><div class="rh-chip-lbl">Online Paid</div></div>
+              <div class="rh-chip"><div class="rh-chip-val">₹2,400</div><div class="rh-chip-lbl">Cash</div></div>
+              <div class="rh-chip"><div class="rh-chip-val">₹260</div><div class="rh-chip-lbl">HALSAA Due</div></div>
+            </div>
+          </div>
+
+          <div class="quick-grid">
+            <div class="qa-card teal" onclick="showScreen('analytics');setSb(document.querySelectorAll('.sb-item')[1])" style="animation-delay:.04s">
+              <span class="qa-icon">📊</span><div class="qa-title">Analytics & Revenue</div><div class="qa-sub">View business trends</div>
+            </div>
+            <div class="qa-card gold" onclick="showScreen('staff');setSb(document.querySelectorAll('.sb-item')[2])" style="animation-delay:.08s">
+              <span class="qa-icon">👥</span><div class="qa-title">Staff Management</div><div class="qa-sub">6 team members</div>
+            </div>
+            <div class="qa-card red" onclick="showToast('📲 QR Code — Share this to patients!')" style="animation-delay:.12s">
+              <span class="qa-icon">📲</span><div class="qa-title">Share QR Code</div><div class="qa-sub">Print or share</div>
+            </div>
+            <div class="qa-card purple" onclick="showScreen('settings');setSb(document.querySelectorAll('.sb-item')[3])" style="animation-delay:.16s">
+              <span class="qa-icon">⚙️</span><div class="qa-title">Clinic Settings</div><div class="qa-sub">Configure everything</div>
+            </div>
+          </div>
+
+          <!-- Doctors today -->
+          <div style="font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+            Doctors Today <span style="background:var(--teal-mid);color:var(--teal);font-size:.6rem;padding:2px 9px;border-radius:100px;">2 active</span>
+          </div>
+          <div class="doc-card available" style="animation-delay:.04s">
+            <div class="doc-av av-teal">👨‍⚕️</div>
+            <div style="flex:1;"><div class="doc-name">Dr. Ramesh Kumar</div><div class="doc-spec">MBBS, MD · General Medicine</div><div class="doc-patients" style="margin-top:2px;">26 done · 14 waiting · Avg 12 min/patient</div></div>
+            <span class="doc-status st-available">Available</span>
+          </div>
+          <div class="doc-card busy" style="animation-delay:.08s">
+            <div class="doc-av av-gold">👩‍⚕️</div>
+            <div style="flex:1;"><div class="doc-name">Dr. Priya Sharma</div><div class="doc-spec">MBBS · Gynaecology</div><div class="doc-patients" style="margin-top:2px;">12 done · 8 waiting · Avg 18 min/patient</div></div>
+            <span class="doc-status st-busy">Consulting</span>
+          </div>
+          <div class="doc-card off" style="animation-delay:.12s">
+            <div class="doc-av av-gray">👨‍⚕️</div>
+            <div style="flex:1;"><div class="doc-name">Dr. Arun Reddy</div><div class="doc-spec">MBBS · Paediatrics</div><div class="doc-patients" style="margin-top:2px;">Back tomorrow</div></div>
+            <span class="doc-status st-off">Day Off</span>
+          </div>
+        </div>
+
+        <!-- Right: Live status + today summary -->
+        <div class="right-panel">
+          <div class="panel-card">
+            <div class="panel-title">Live Clinic Status</div>
+            <div class="status-row"><div class="sr-ico icon-teal-sm">🩺</div><div class="sr-lbl">Dr. Ramesh Kumar</div><span class="sr-val" style="color:var(--green)">Available ●</span></div>
+            <div class="status-row"><div class="sr-ico icon-gold-sm">🧪</div><div class="sr-lbl">Lab (Vijaya Diag.)</div><span class="sr-val" style="color:var(--teal)">8 processing</span></div>
+            <div class="status-row"><div class="sr-ico icon-teal-sm">📺</div><div class="sr-lbl">TV Display</div><span class="sr-val" style="color:var(--green)">Live ●</span></div>
+            <div class="status-row"><div class="sr-ico icon-gold-sm">📲</div><div class="sr-lbl">WhatsApp Alerts</div><span class="sr-val" style="color:var(--green)">Active</span></div>
+            <div class="status-row"><div class="sr-ico icon-red-sm">⚠️</div><div class="sr-lbl">No-show Rate</div><span class="sr-val" style="color:var(--red)">4.7%</span></div>
+            <div class="status-row"><div class="sr-ico icon-teal-sm">🔊</div><div class="sr-lbl">Voice Announcements</div><span class="sr-val" style="color:var(--green)">Telugu ON</span></div>
+          </div>
+          <div class="panel-card">
+            <div class="panel-title">Today at a Glance</div>
+            <div class="status-row"><div class="sr-lbl">Total Tokens Issued</div><span class="sr-val" style="color:var(--teal)">42</span></div>
+            <div class="status-row"><div class="sr-lbl">Online Bookings</div><span class="sr-val" style="color:var(--blue)">29 (69%)</span></div>
+            <div class="status-row"><div class="sr-lbl">Walk-ins</div><span class="sr-val" style="color:var(--gold)">13 (31%)</span></div>
+            <div class="status-row"><div class="sr-lbl">Avg Wait Time</div><span class="sr-val" style="color:var(--teal)">18 min</span></div>
+            <div class="status-row"><div class="sr-lbl">HALSAA Fee Due</div><span class="sr-val" style="color:var(--red)">₹260</span></div>
+          </div>
+          <div class="panel-card" style="background:linear-gradient(135deg,var(--teal-light),#fff);border-color:var(--border);">
+            <div class="panel-title" style="color:var(--teal)">💡 Insights</div>
+            <div style="font-size:.75rem;color:var(--text);font-weight:600;line-height:1.7;">
+              Peak hours: 9–11 AM (40% of patients)<br>
+              Dr. Ramesh handles 67% of today's load<br>
+              WhatsApp delivery rate: 98% ✅<br>
+              Revenue up 12% vs last Wednesday
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ANALYTICS ══ -->
+    <div class="screen" id="analytics">
+      <div class="period-tabs">
+        <button class="period-tab active" onclick="switchPeriod(this)">Today</button>
+        <button class="period-tab" onclick="switchPeriod(this)">This Week</button>
+        <button class="period-tab" onclick="switchPeriod(this)">This Month</button>
+      </div>
+      <div class="rev-cards-row">
+        <div class="rc" style="animation-delay:.04s"><span class="rc-icon">💰</span><div class="rc-val" style="color:var(--teal)">₹7,800</div><div class="rc-lbl">Total Revenue</div></div>
+        <div class="rc" style="animation-delay:.08s"><span class="rc-icon">👥</span><div class="rc-val" style="color:var(--gold)">42</div><div class="rc-lbl">Patients</div></div>
+        <div class="rc" style="animation-delay:.12s"><span class="rc-icon">💳</span><div class="rc-val" style="color:var(--green)">₹210</div><div class="rc-lbl">HALSAA Fee/Day</div></div>
+        <div class="rc" style="animation-delay:.16s"><span class="rc-icon">📈</span><div class="rc-val" style="color:var(--blue)">+12%</div><div class="rc-lbl">vs Last Week</div></div>
+      </div>
+      <div class="analytics-layout">
+        <div>
+          <div class="a-card">
+            <div class="a-card-title">Patients This Week</div>
+            <div class="bar-chart" id="barChart"></div>
+            <div style="display:flex;gap:10px;" id="barLabels"></div>
+          </div>
+          <div class="a-card">
+            <div class="a-card-title">Revenue Breakdown</div>
+            <div class="bk-row"><div class="bk-left"><div class="bk-dot" style="background:var(--teal)"></div>Consultation Fees</div><div style="display:flex;align-items:center;gap:10px;"><div class="bk-bar-wrap"><div class="bk-bar" style="width:85%;background:var(--teal);"></div></div><div class="bk-val" style="color:var(--teal)">₹6,900</div></div></div>
+            <div class="bk-row"><div class="bk-left"><div class="bk-dot" style="background:var(--gold)"></div>Lab Reports</div><div style="display:flex;align-items:center;gap:10px;"><div class="bk-bar-wrap"><div class="bk-bar" style="width:12%;background:var(--gold);"></div></div><div class="bk-val" style="color:var(--gold)">₹900</div></div></div>
+            <div class="bk-row"><div class="bk-left"><div class="bk-dot" style="background:var(--red)"></div>HALSAA Platform Fee</div><div style="display:flex;align-items:center;gap:10px;"><div class="bk-bar-wrap"><div class="bk-bar" style="width:3%;background:var(--red);"></div></div><div class="bk-val" style="color:var(--red)">-₹210</div></div></div>
+            <div class="bk-row" style="padding-top:12px;"><div class="bk-left" style="font-weight:800;">Net Revenue</div><div class="bk-val" style="color:var(--teal);font-size:1rem;">₹7,590</div></div>
+          </div>
+          <div style="font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">HALSAA Monthly Bills</div>
+          <div class="bill-card">
+            <div class="bc-top"><div style="width:40px;height:40px;border-radius:11px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">📄</div><div style="flex:1;"><div class="bc-month">November 2025</div><div class="bc-patients">1,240 patients · ₹5/patient</div></div><div style="text-align:right;"><div class="bc-amt">₹6,200</div><div class="bc-status bc-paid">Paid ✓</div></div></div>
+            <div class="bc-actions"><button class="bca-btn bca-teal" onclick="showToast('📥 Invoice downloaded!')">📥 Invoice</button><button class="bca-btn bca-gold" onclick="showToast('📊 Details opened!')">📊 Details</button></div>
+          </div>
+          <div class="bill-card">
+            <div class="bc-top"><div style="width:40px;height:40px;border-radius:11px;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">📄</div><div style="flex:1;"><div class="bc-month">December 2025</div><div class="bc-patients">42 patients so far this month</div></div><div style="text-align:right;"><div class="bc-amt">₹210</div><div class="bc-status bc-pending">Due 1 Jan</div></div></div>
+            <div class="bc-actions"><button class="bca-btn bca-green" onclick="showToast('💳 Pay Now!')">💳 Pay Now</button><button class="bca-btn bca-gold" onclick="showToast('📊 Details opened!')">📊 Details</button></div>
+          </div>
+        </div>
+        <div>
+          <div class="a-card">
+            <div class="a-card-title">Doctor-wise Load</div>
+            <div class="bk-row"><div class="bk-left">👨‍⚕️ Dr. Ramesh</div><div class="bk-val" style="color:var(--teal)">26 pts</div></div>
+            <div class="bk-row"><div class="bk-left">👩‍⚕️ Dr. Priya</div><div class="bk-val" style="color:var(--gold)">12 pts</div></div>
+            <div class="bk-row"><div class="bk-left">Peak Hour</div><div class="bk-val" style="color:var(--blue)">9–11 AM</div></div>
+            <div class="bk-row"><div class="bk-left">Avg Wait</div><div class="bk-val" style="color:var(--teal)">18 min</div></div>
+            <div class="bk-row"><div class="bk-left">Show Rate</div><div class="bk-val" style="color:var(--green)">95.3%</div></div>
+          </div>
+          <div class="a-card">
+            <div class="a-card-title">Booking Channels</div>
+            <div class="bk-row"><div class="bk-left"><div class="bk-dot" style="background:var(--teal)"></div>HALSAA App</div><div class="bk-val" style="color:var(--teal)">29 (69%)</div></div>
+            <div class="bk-row"><div class="bk-left"><div class="bk-dot" style="background:var(--gold)"></div>Walk-in</div><div class="bk-val" style="color:var(--gold)">13 (31%)</div></div>
+            <div class="bk-row"><div class="bk-left"><div class="bk-dot" style="background:var(--blue)"></div>WhatsApp Sent</div><div class="bk-val" style="color:var(--blue)">39 (98%)</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STAFF ══ -->
+    <div class="screen" id="staff">
+      <div class="staff-header-row">
+        <div><div class="staff-header-info">Staff Management</div><div class="staff-header-sub">6 members · 3 Doctors · 2 Receptionists · 1 Lab Tech</div></div>
+        <button class="add-btn" onclick="showToast('➕ Add Staff form opened')">➕ Add Staff Member</button>
+      </div>
+      <div class="staff-layout">
+        <div>
+          <div class="staff-card" style="animation-delay:.04s"><div class="staff-av" style="background:var(--teal-light);color:var(--teal);">👨‍⚕️</div><div style="flex:1;"><div class="staff-name">Dr. Ramesh Kumar</div><div class="staff-role">Doctor · General Medicine · MBBS, MD</div></div><span class="staff-status st-available">Active</span><div class="staff-actions"><button class="sab sab-edit" onclick="showToast('✏️ Edit Dr. Ramesh')">Edit</button><button class="sab sab-del" onclick="showToast('🚫 Remove confirmed!')">Remove</button></div></div>
+          <div class="staff-card" style="animation-delay:.08s"><div class="staff-av" style="background:var(--gold-light);color:#CC7A00;">👩‍⚕️</div><div style="flex:1;"><div class="staff-name">Dr. Priya Sharma</div><div class="staff-role">Doctor · Gynaecology · MBBS</div></div><span class="staff-status st-busy">Consulting</span><div class="staff-actions"><button class="sab sab-edit" onclick="showToast('✏️ Edit Dr. Priya')">Edit</button><button class="sab sab-del" onclick="showToast('🚫 Remove confirmed!')">Remove</button></div></div>
+          <div class="staff-card" style="animation-delay:.12s"><div class="staff-av" style="background:#F5F5F5;color:var(--muted);">👨‍⚕️</div><div style="flex:1;"><div class="staff-name">Dr. Arun Reddy</div><div class="staff-role">Doctor · Paediatrics · MBBS</div></div><span class="staff-status st-off">Day Off</span><div class="staff-actions"><button class="sab sab-edit" onclick="showToast('✏️ Edit Dr. Arun')">Edit</button><button class="sab sab-del" onclick="showToast('🚫 Remove confirmed!')">Remove</button></div></div>
+          <div class="staff-card" style="animation-delay:.16s"><div class="staff-av" style="background:var(--teal-light);color:var(--teal);">👩</div><div style="flex:1;"><div class="staff-name">Sunitha Reddy</div><div class="staff-role">Receptionist · Front Desk</div></div><span class="staff-status st-available">On Duty</span><div class="staff-actions"><button class="sab sab-edit" onclick="showToast('✏️ Edit Sunitha')">Edit</button><button class="sab sab-del" onclick="showToast('🚫 Remove confirmed!')">Remove</button></div></div>
+          <div class="staff-card" style="animation-delay:.2s"><div class="staff-av" style="background:var(--gold-light);color:#CC7A00;">👨</div><div style="flex:1;"><div class="staff-name">Rahul Kumar</div><div class="staff-role">Receptionist · Front Desk</div></div><span class="staff-status st-available">On Duty</span><div class="staff-actions"><button class="sab sab-edit" onclick="showToast('✏️ Edit Rahul')">Edit</button><button class="sab sab-del" onclick="showToast('🚫 Remove confirmed!')">Remove</button></div></div>
+          <div class="staff-card" style="animation-delay:.24s"><div class="staff-av" style="background:rgba(255,179,71,.2);color:#CC7A00;">🧪</div><div style="flex:1;"><div class="staff-name">Suresh Yadav</div><div class="staff-role">Lab Technician · Vijaya Diagnostics</div></div><span class="staff-status st-available">On Duty</span><div class="staff-actions"><button class="sab sab-edit" onclick="showToast('✏️ Edit Suresh')">Edit</button><button class="sab sab-del" onclick="showToast('🚫 Remove confirmed!')">Remove</button></div></div>
+        </div>
+        <div class="add-staff-panel">
+          <div style="font-size:.9rem;font-weight:800;color:var(--text);margin-bottom:4px;">Add New Staff Member</div>
+          <div style="font-size:.68rem;color:var(--muted);margin-bottom:18px;">Fill details and assign role</div>
+          <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" placeholder="e.g. Dr. Lakshmi Rao"/></div>
+          <div class="form-group"><label class="form-label">Mobile Number *</label><input class="form-input" placeholder="+91 XXXXX XXXXX" type="tel"/></div>
+          <div class="form-group"><label class="form-label">Assign Role</label></div>
+          <div class="role-grid">
+            <div class="role-chip sel" onclick="selectRole(this)"><div class="role-chip-icon">👨‍⚕️</div><div class="role-chip-label">Doctor</div></div>
+            <div class="role-chip" onclick="selectRole(this)"><div class="role-chip-icon">🗂️</div><div class="role-chip-label">Receptionist</div></div>
+            <div class="role-chip" onclick="selectRole(this)"><div class="role-chip-icon">🧪</div><div class="role-chip-label">Lab Tech</div></div>
+            <div class="role-chip" onclick="selectRole(this)"><div class="role-chip-icon">🏥</div><div class="role-chip-label">Admin</div></div>
+          </div>
+          <button class="save-btn" onclick="showToast('✅ Staff member added successfully!')">➕ Add to Team</button>
+          <div style="margin-top:12px;background:var(--teal-light);border-radius:11px;padding:12px;font-size:.68rem;color:var(--teal);font-weight:600;line-height:1.6;">
+            💡 Staff member will receive a WhatsApp invite with login instructions.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="screen" id="settings">
+      <div style="margin-bottom:20px;"><div style="font-size:1rem;font-weight:800;color:var(--text);">Clinic Settings</div><div style="font-size:.7rem;color:var(--muted);">Configure your clinic, fees, and HALSAA features</div></div>
+      <div class="settings-layout">
+        <div>
+          <div class="settings-section">
+            <div class="ss-hdr">Clinic Configuration</div>
+            <div class="setting-row" onclick="showToast('🏥 Clinic name editing')"><div class="srow-icon ico-teal">🏥</div><div class="srow-text"><div class="srow-title">Clinic Name</div><div class="srow-sub">Sri Sai Hospital</div></div><div class="srow-right"><span class="srow-val">Edit</span><span class="srow-arrow">›</span></div></div>
+            <div class="setting-row" onclick="showToast('📍 Location editing')"><div class="srow-icon ico-gold">📍</div><div class="srow-text"><div class="srow-title">Location</div><div class="srow-sub">Hanamkonda, Warangal</div></div><div class="srow-right"><span class="srow-val">Edit</span><span class="srow-arrow">›</span></div></div>
+            <div class="setting-row" onclick="showToast('⏰ Hours editing')"><div class="srow-icon ico-teal">⏰</div><div class="srow-text"><div class="srow-title">Working Hours</div><div class="srow-sub">9 AM–1 PM · 5 PM–8 PM</div></div><div class="srow-right"><span class="srow-val">Edit</span><span class="srow-arrow">›</span></div></div>
+            <div class="setting-row" onclick="showToast('💰 Fee editing')"><div class="srow-icon ico-gold">💰</div><div class="srow-text"><div class="srow-title">Consultation Fees</div><div class="srow-sub">Normal ₹300 · FU ₹150 · Senior ₹200</div></div><div class="srow-right"><span class="srow-val">Edit</span><span class="srow-arrow">›</span></div></div>
+          </div>
+          <div class="settings-section">
+            <div class="ss-hdr">Queue & Display</div>
+            <div class="setting-row"><div class="srow-icon ico-teal">📺</div><div class="srow-text"><div class="srow-title">TV Display Mode</div><div class="srow-sub">Show queue on clinic TV</div></div><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+            <div class="setting-row"><div class="srow-icon ico-gold">🔊</div><div class="srow-text"><div class="srow-title">Voice Announcements</div><div class="srow-sub">Auto-call next token in Telugu</div></div><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+            <div class="setting-row"><div class="srow-icon ico-teal">📲</div><div class="srow-text"><div class="srow-title">WhatsApp Notifications</div><div class="srow-sub">Alert patients when their turn approaches</div></div><div class="toggle on" onclick="toggleSwitch(this)"></div></div>
+            <div class="setting-row" onclick="showToast('🔢 Max token limit editing')"><div class="srow-icon ico-purple">🔢</div><div class="srow-text"><div class="srow-title">Max Tokens Per Day</div><div class="srow-sub">Currently 60 tokens</div></div><div class="srow-right"><span class="srow-val">60</span><span class="srow-arrow">›</span></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="settings-section">
+            <div class="ss-hdr">HALSAA Integration</div>
+            <div class="setting-row" onclick="showToast('📲 QR Code opened!')"><div class="srow-icon ico-teal">📲</div><div class="srow-text"><div class="srow-title">Clinic QR Code</div><div class="srow-sub">Print or share with patients</div></div><div class="srow-right"><span class="srow-val">View</span><span class="srow-arrow">›</span></div></div>
+            <div class="setting-row" onclick="showToast('💳 Razorpay settings')"><div class="srow-icon ico-green">💳</div><div class="srow-text"><div class="srow-title">Payment Gateway</div><div class="srow-sub">Razorpay · 2% fee</div></div><div class="srow-right"><span class="srow-val">Active</span><span class="srow-arrow">›</span></div></div>
+            <div class="setting-row" onclick="showToast('📊 Billing history')"><div class="srow-icon ico-teal">🧾</div><div class="srow-text"><div class="srow-title">HALSAA Billing</div><div class="srow-sub">₹5/patient · Next due Jan 1</div></div><div class="srow-right"><span class="srow-val">History</span><span class="srow-arrow">›</span></div></div>
+          </div>
+          <div class="settings-section">
+            <div class="ss-hdr">Danger Zone</div>
+            <div class="setting-row" onclick="showToast('🔴 Queue closed for today!')"><div class="srow-icon ico-red">🔴</div><div class="srow-text"><div class="srow-title">Close Queue Today</div><div class="srow-sub">Stop new bookings immediately</div></div><div class="srow-right"><span style="font-size:.7rem;font-weight:700;color:var(--red);">Close</span></div></div>
+            <div class="setting-row" onclick="showToast('🚪 Logout!')"><div class="srow-icon ico-red">🚪</div><div class="srow-text"><div class="srow-title">Logout</div><div class="srow-sub">Sign out of admin portal</div></div><div class="srow-right"><span class="srow-arrow">›</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+const titleMap={home:'Dashboard',analytics:'Analytics & Revenue',staff:'Staff Management',settings:'Clinic Settings'};
+function showScreen(id){
+  const mnItems=document.querySelectorAll('.mn-item');
+  mnItems.forEach((it,i)=>{
+    const sc=it.getAttribute('onclick');
+    if(sc&&sc.includes("'"+id+"'"))it.classList.add('active');
+    else it.classList.remove('active');
+  });
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('topbar-title').textContent=titleMap[id]||id;
+  window.scrollTo(0,0);
+}
+function setMobileNav(el){document.querySelectorAll(".mn-item").forEach(i=>i.classList.remove("active"));if(el)el.classList.add("active");}
+function setSb(el){document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));if(el)el.classList.add('active');}
+function switchPeriod(el){document.querySelectorAll('.period-tab').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
+function selectRole(el){document.querySelectorAll('.role-chip').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+function toggleSwitch(el){el.classList.toggle('on');showToast(el.classList.contains('on')?'✅ Turned ON':'🔴 Turned OFF');}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const vals=[38,42,55,30,62,28,10];
+  const max=Math.max(...vals);
+  const chart=document.getElementById('barChart');
+  const labels=document.getElementById('barLabels');
+  if(!chart) return;
+  days.forEach((d,i)=>{
+    const wrap=document.createElement('div');wrap.className='bar-wrap';
+    const bar=document.createElement('div');
+    bar.className='bar'+(i===4?' hl':'');
+    bar.style.height=(vals[i]/max*100+8)+'px';
+    bar.innerHTML=`<span class="bar-v">${vals[i]}</span>`;
+    wrap.appendChild(bar);chart.appendChild(wrap);
+    const l=document.createElement('div');l.className='bar-wrap';l.innerHTML=`<div class="bar-lbl">${d}</div>`;
+    labels.appendChild(l);
+  });
+});
+
+let tt;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2500);}
+</script>
+
+<nav class="mobile-nav" id="mobileNav">
+  <div class="mn-item active" onclick="showScreen('home');setMobileNav(this)"><div class="mn-icon">🏠</div><div class="mn-label">Home</div></div>
+  <div class="mn-item" onclick="showScreen('analytics');setMobileNav(this)"><div class="mn-icon">📊</div><div class="mn-label">Analytics</div></div>
+  <div class="mn-item" onclick="showScreen('staff');setMobileNav(this)"><div class="mn-icon">👥</div><div class="mn-label">Staff</div></div>
+  <div class="mn-item" onclick="showScreen('settings');setMobileNav(this)"><div class="mn-icon">⚙️</div><div class="mn-label">Settings</div></div>
+</nav>
+</body>
+</html>

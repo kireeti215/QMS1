@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>HALSAA — Skip the Queue. Not the Doctor.</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{font-family:'Poppins',sans-serif;background:#fff;color:#0D2B26;overflow-x:hidden;}
+a{text-decoration:none;color:inherit;}
+button{cursor:pointer;font-family:'Poppins',sans-serif;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:#00C9A7;border-radius:2px;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,179,71,.6)}60%{box-shadow:0 0 0 8px rgba(255,179,71,0)}}
+@keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(6px)}}
+.fade-up{animation:fadeUp .7s ease both;}
+.float{animation:float 4s ease-in-out infinite;}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ══ NAV ══ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;height:60px;
+  padding:0 4vw;display:flex;align-items:center;justify-content:space-between;
+  transition:all .35s;
+}
+nav.scrolled{
+  background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(0,201,167,0.15);
+  box-shadow:0 4px 24px rgba(0,201,167,0.06);
+}
+.logo{font-size:1.5rem;font-weight:900;color:#fff;transition:color .35s;letter-spacing:.02em;}
+nav.scrolled .logo{color:#0D2B26;}
+.logo span{color:#FFB347;}
+.nav-desktop{display:flex;align-items:center;gap:28px;}
+.nav-desktop a{font-size:.78rem;font-weight:600;color:rgba(255,255,255,.7);border-bottom:2px solid transparent;padding-bottom:2px;transition:all .2s;}
+nav.scrolled .nav-desktop a{color:#7A9E98;}
+.nav-desktop a:hover,.nav-desktop a.active{color:#00C9A7!important;border-color:#00C9A7;}
+.nav-btns{display:flex;gap:8px;align-items:center;}
+.btn-login{padding:8px 16px;border-radius:9px;font-size:.75rem;font-weight:700;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;transition:all .2s;}
+nav.scrolled .btn-login{border-color:rgba(0,201,167,.2);color:#00C9A7;}
+.btn-signup{padding:8px 16px;border-radius:9px;font-size:.75rem;font-weight:700;border:none;background:linear-gradient(135deg,#00C9A7,#00A88D);color:#fff;box-shadow:0 3px 12px rgba(0,201,167,.3);}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;padding:4px;cursor:pointer;}
+.hamburger span{width:22px;height:2px;background:#fff;border-radius:1px;transition:all .3s;display:block;}
+nav.scrolled .hamburger span{background:#0D2B26;}
+
+/* Mobile menu */
+.mob-menu{
+  display:none;position:fixed;top:60px;left:0;right:0;z-index:199;
+  background:#fff;border-bottom:1px solid rgba(0,201,167,.12);
+  padding:16px 5vw;flex-direction:column;gap:0;
+  box-shadow:0 8px 32px rgba(0,0,0,.08);
+}
+.mob-menu.open{display:flex;}
+.mob-menu a{font-size:.9rem;font-weight:600;color:#7A9E98;padding:12px 0;border-bottom:1px solid rgba(0,201,167,.08);}
+.mob-btns{display:flex;gap:10px;padding-top:14px;}
+.mob-btns button{flex:1;padding:12px;border-radius:10px;font-weight:700;font-size:.82rem;font-family:'Poppins',sans-serif;}
+
+/* ══ HERO ══ */
+#home{
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse at 70% 20%,rgba(255,179,71,.12) 0%,transparent 60%),
+    radial-gradient(ellipse at 20% 80%,rgba(0,201,167,.15) 0%,transparent 55%),
+    linear-gradient(150deg,#0D2B26 0%,#004D3D 50%,#007A62 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:100px 5vw 60px;position:relative;overflow:hidden;
+}
+.hero-pattern{position:absolute;inset:0;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2300C9A7'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");}
+.blob1{position:absolute;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,179,71,.07);pointer-events:none;}
+.blob2{position:absolute;bottom:-60px;left:-60px;width:240px;height:240px;border-radius:50%;background:rgba(0,201,167,.06);pointer-events:none;}
+
+/* Floating cards — desktop only */
+.float-card{position:absolute;background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:10px;}
+.fc1{top:18%;right:6%;}
+.fc2{bottom:20%;left:5%;animation-delay:1.5s;}
+.fc-icon{font-size:1.3rem;}
+.fc-title{font-size:.68rem;font-weight:700;color:#fff;}
+.fc-sub{font-size:.58rem;color:rgba(255,255,255,.5);}
+
+.hero-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:100px;padding:7px 18px;margin-bottom:24px;font-size:.68rem;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.06em;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#FFB347;animation:pulse 1.8s infinite;flex-shrink:0;}
+
+.hero-h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,8vw,4.8rem);font-weight:800;color:#fff;line-height:1.1;letter-spacing:-.02em;margin-bottom:14px;}
+.hero-h1 span{color:#FFB347;}
+.hero-sub{font-size:clamp(.85rem,3.5vw,1.05rem);color:rgba(255,255,255,.6);max-width:520px;line-height:1.8;margin:0 auto 36px;}
+
+.hero-ctas{display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;margin:0 auto 40px;}
+.cta-gold{display:flex;align-items:center;justify-content:center;gap:9px;padding:15px 24px;border-radius:14px;border:none;background:linear-gradient(135deg,#FFB347,#E09020);color:#fff;font-size:.92rem;font-weight:700;box-shadow:0 8px 24px rgba(255,179,71,.45);transition:transform .2s;font-family:'Poppins',sans-serif;width:100%;}
+.cta-ghost{display:flex;align-items:center;justify-content:center;gap:9px;padding:13px 24px;border-radius:14px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);color:#fff;font-size:.85rem;font-weight:700;transition:background .2s;font-family:'Poppins',sans-serif;width:100%;}
+
+.hero-stats{display:grid;grid-template-columns:repeat(2,1fr);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:18px;overflow:hidden;width:100%;max-width:420px;margin:0 auto;}
+.hs{padding:16px 12px;text-align:center;border-right:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);}
+.hs:nth-child(2){border-right:none;}
+.hs:nth-child(3){border-bottom:none;}
+.hs:nth-child(4){border-right:none;border-bottom:none;}
+.hs-v{font-size:1.6rem;font-weight:900;color:#FFB347;line-height:1;margin-bottom:4px;}
+.hs-l{font-size:.55rem;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;}
+
+.scroll-hint{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px;color:rgba(255,255,255,.3);font-size:.55rem;font-weight:600;letter-spacing:.1em;}
+.chevron{width:14px;height:14px;border-right:2px solid rgba(255,255,255,.25);border-bottom:2px solid rgba(255,255,255,.25);transform:rotate(45deg);animation:bounce 1.6s ease-in-out infinite;}
+
+/* ══ SECTIONS ══ */
+.section{padding:64px 5vw;}
+.sec-inner{max-width:1120px;margin:0 auto;}
+.sec-tag{display:inline-block;background:#E8FAF7;color:#00C9A7;font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:12px;}
+.sec-h2{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,5vw,2.8rem);font-weight:800;color:#0D2B26;margin-bottom:10px;line-height:1.2;}
+.sec-h2 span{color:#00C9A7;}
+.sec-sub{font-size:.88rem;color:#7A9E98;max-width:480px;line-height:1.75;}
+.sec-center{text-align:center;display:flex;flex-direction:column;align-items:center;}
+
+/* ══ DISCOVER ══ */
+#discover{background:#F7FFFE;}
+.search-bar{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid rgba(0,201,167,.15);border-radius:14px;padding:12px 16px;max-width:620px;width:100%;margin:24px auto 18px;box-shadow:0 4px 24px rgba(0,201,167,.08);transition:border-color .2s;}
+.search-bar:focus-within{border-color:#00C9A7;}
+.search-bar input{flex:1;font-family:'Poppins',sans-serif;font-size:.88rem;color:#0D2B26;border:none;outline:none;background:transparent;}
+.search-bar input::placeholder{color:#7A9E98;}
+.search-btn{padding:9px 16px;border-radius:9px;border:none;background:linear-gradient(135deg,#00C9A7,#00A88D);color:#fff;font-size:.75rem;font-weight:700;font-family:'Poppins',sans-serif;white-space:nowrap;}
+.filters{display:flex;overflow-x:auto;gap:8px;padding-bottom:6px;margin-bottom:28px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.filters::-webkit-scrollbar{display:none;}
+.chip{padding:7px 16px;border-radius:100px;border:1.5px solid rgba(0,201,167,.15);background:#fff;font-size:.72rem;font-weight:600;color:#7A9E98;cursor:pointer;transition:all .2s;font-family:'Poppins',sans-serif;white-space:nowrap;flex-shrink:0;}
+.chip.active{background:#E8FAF7;border-color:#00C9A7;color:#00C9A7;}
+
+.cards-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+.clinic-card{background:#fff;border-radius:20px;border:1.5px solid rgba(0,201,167,.12);overflow:hidden;transition:all .25s;box-shadow:0 2px 16px rgba(0,201,167,.06);}
+.card-top{padding:16px 16px 12px;display:flex;align-items:flex-start;gap:12px;}
+.card-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.card-name{font-size:.92rem;font-weight:800;color:#0D2B26;margin-bottom:3px;}
+.card-addr{font-size:.68rem;color:#7A9E98;margin-bottom:7px;}
+.card-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.ctag{font-size:.55rem;font-weight:700;padding:3px 9px;border-radius:100px;}
+.card-qr-row{padding:0 16px 12px;display:flex;gap:12px;align-items:center;}
+.qr-wrap{width:56px;height:56px;border-radius:10px;border:2px solid rgba(0,201,167,.12);padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.card-meta-item{font-size:.68rem;color:#7A9E98;display:flex;align-items:center;gap:5px;margin-bottom:4px;}
+.card-footer{padding:0 16px 16px;display:flex;gap:8px;}
+.btn-book{flex:1;padding:12px;border-radius:11px;border:none;color:#fff;font-size:.78rem;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;}
+.btn-details{padding:12px 14px;border-radius:11px;border:1.5px solid rgba(0,201,167,.15);background:transparent;color:#7A9E98;font-size:.78rem;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;}
+
+/* ══ FEATURES ══ */
+#features{background:#fff;}
+.steps-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:32px;}
+.step-card{background:#F7FFFE;border-radius:18px;padding:22px 20px;border:1.5px solid rgba(0,201,167,.12);position:relative;overflow:hidden;}
+.step-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00C9A7,#FFB347);}
+.step-num{position:absolute;top:12px;right:16px;font-size:2.6rem;font-weight:900;color:#00C9A7;opacity:.1;line-height:1;}
+.step-icon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:12px;}
+.step-title{font-size:.92rem;font-weight:700;color:#0D2B26;margin-bottom:6px;}
+.step-desc{font-size:.78rem;color:#7A9E98;line-height:1.65;}
+.feat-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:28px;}
+.feat-item{display:flex;gap:12px;align-items:flex-start;background:#F7FFFE;border-radius:14px;padding:15px;border:1px solid rgba(0,201,167,.12);}
+.feat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.feat-title{font-size:.82rem;font-weight:700;color:#0D2B26;margin-bottom:3px;}
+.feat-desc{font-size:.72rem;color:#7A9E98;line-height:1.6;}
+
+/* ══ ABOUT ══ */
+#about{padding:64px 5vw;background:linear-gradient(145deg,#0D2B26 0%,#004D3D 50%,#007A62 100%);}
+.about-grid{display:flex;flex-direction:column;gap:32px;max-width:960px;margin:0 auto;}
+.about-tag{display:inline-block;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:12px;}
+.about-h2{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,5vw,2.6rem);font-weight:800;color:#fff;margin-bottom:10px;line-height:1.2;}
+.about-h2 span{color:#FFB347;}
+.about-sub{font-size:.88rem;color:rgba(255,255,255,.58);line-height:1.8;margin-bottom:24px;}
+.about-card{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+.about-card-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.about-card-title{font-size:.82rem;font-weight:700;color:#fff;margin-bottom:2px;}
+.about-card-sub{font-size:.68rem;color:rgba(255,255,255,.48);}
+.stats-right{display:flex;flex-direction:column;gap:12px;}
+.stat-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:20px;text-align:center;}
+.stat-val{font-size:2rem;font-weight:900;color:#FFB347;line-height:1;margin-bottom:5px;}
+.stat-lbl{font-size:.68rem;color:rgba(255,255,255,.45);font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.tagline-box{background:rgba(255,179,71,.1);border:1px solid rgba(255,179,71,.2);border-radius:16px;padding:20px;text-align:center;}
+
+/* ══ PRICING ══ */
+#pricing{background:#F7FFFE;}
+.pricing-grid{display:grid;grid-template-columns:1fr;gap:16px;max-width:480px;margin:32px auto 0;}
+.price-card{background:#fff;border-radius:22px;padding:28px 22px;border:2px solid rgba(0,201,167,.15);position:relative;overflow:hidden;}
+.price-card.featured{border-color:#00C9A7;box-shadow:0 8px 32px rgba(0,201,167,.14);}
+.price-card.featured::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#00C9A7,#FFB347);}
+.price-badge{position:absolute;top:16px;right:16px;background:linear-gradient(135deg,#00C9A7,#00A88D);color:#fff;font-size:.55rem;font-weight:700;padding:4px 10px;border-radius:100px;}
+.price-who{font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7A9E98;margin-bottom:10px;}
+.price-amt{font-size:3rem;font-weight:900;color:#0D2B26;line-height:1;margin-bottom:3px;}
+.price-amt sup{font-size:1.2rem;color:#00C9A7;vertical-align:super;}
+.price-period{font-size:.72rem;color:#7A9E98;margin-bottom:20px;}
+.price-hr{height:1px;background:rgba(0,201,167,.12);margin:0 0 16px;}
+.price-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
+.price-list li{display:flex;align-items:flex-start;gap:9px;font-size:.78rem;color:#0D2B26;line-height:1.5;}
+.price-list li::before{content:'✓';color:#00C9A7;font-weight:800;flex-shrink:0;}
+.price-list li.free{color:#0EA66A;font-weight:700;}
+.price-list li.free::before{color:#0EA66A;}
+.btn-outline{width:100%;padding:13px;border-radius:12px;border:2px solid #00C9A7;background:transparent;color:#00C9A7;font-size:.82rem;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;}
+.btn-fill{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#00C9A7,#00A88D);color:#fff;font-size:.82rem;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;}
+.total-note{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;border:1.5px solid rgba(0,201,167,.15);border-radius:13px;padding:14px 20px;max-width:400px;margin:20px auto 0;font-size:.82rem;font-weight:600;text-align:center;}
+.total-note strong{color:#00C9A7;}
+
+/* ══ LOGIN ══ */
+#login{padding:64px 5vw;background:linear-gradient(145deg,#0D2B26,#004D3D);text-align:center;}
+.login-tag{display:inline-block;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:12px;}
+.login-h2{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,5vw,2.6rem);font-weight:800;color:#fff;margin-bottom:8px;}
+.login-sub{font-size:.88rem;color:rgba(255,255,255,.5);margin-bottom:32px;}
+.roles-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:480px;margin:0 auto 20px;}
+.role-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:18px 12px;text-align:center;display:block;transition:all .22s;}
+.role-icon{font-size:1.8rem;margin-bottom:9px;display:block;}
+.role-title{font-size:.8rem;font-weight:700;color:#fff;margin-bottom:3px;}
+.role-sub{font-size:.6rem;color:rgba(255,255,255,.5);margin-bottom:8px;}
+.role-arrow{font-size:.65rem;font-weight:700;color:#FFB347;}
+.login-note{font-size:.68rem;color:rgba(255,255,255,.28);}
+
+/* ══ FOOTER ══ */
+footer{background:#060F1A;padding:40px 5vw 24px;}
+.footer-inner{max-width:1120px;margin:0 auto;}
+.footer-brand{font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:5px;}
+.footer-brand span{color:#FFB347;}
+.footer-tagline{font-size:.72rem;color:rgba(255,255,255,.32);margin-bottom:12px;line-height:1.7;}
+.footer-medhara{font-size:.68rem;color:rgba(255,255,255,.28);margin-bottom:28px;}
+.footer-medhara b{color:#00C9A7;}
+.footer-links-row{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;}
+.footer-col-title{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:12px;}
+.footer-col a{display:block;font-size:.75rem;color:rgba(255,255,255,.38);margin-bottom:8px;}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding-top:16px;text-align:center;}
+.footer-copy{font-size:.65rem;color:rgba(255,255,255,.22);line-height:1.8;}
+
+/* ══ DESKTOP ══ */
+@media(min-width:640px){
+  nav{height:68px;}
+  .mob-menu{top:68px;}
+  .hamburger{display:none;}
+  .hero-ctas{flex-direction:row;flex-wrap:wrap;justify-content:center;max-width:none;width:auto;}
+  .cta-gold,.cta-ghost{width:auto;}
+  .hero-stats{grid-template-columns:repeat(4,1fr);}
+  .hs{border-bottom:none!important;}
+  .hs:nth-child(2){border-right:1px solid rgba(255,255,255,.1)!important;}
+  .hs:nth-child(3){border-right:1px solid rgba(255,255,255,.1)!important;}
+  .cards-grid{grid-template-columns:repeat(2,1fr);}
+  .steps-grid{grid-template-columns:repeat(2,1fr);}
+  .feat-grid{grid-template-columns:repeat(2,1fr);}
+  .about-grid{flex-direction:row;align-items:flex-start;}
+  .about-grid>div:first-child{flex:1.2;}
+  .stats-right{flex:1;}
+  .pricing-grid{grid-template-columns:repeat(2,1fr);max-width:640px;}
+  .roles-grid{grid-template-columns:repeat(3,1fr);max-width:600px;}
+  .footer-links-row{grid-template-columns:1fr 1fr;}
+  .footer-bottom{display:flex;justify-content:space-between;text-align:left;}
+}
+@media(min-width:900px){
+  nav{padding:0 5vw;}
+  .nav-desktop{display:flex;}
+  .nav-btns .btn-login,.nav-btns .btn-signup{display:flex;}
+  .float-card{display:flex;}
+  #home{padding:120px 5vw 80px;}
+  .hero-h1{font-size:clamp(2.6rem,6.5vw,4.8rem);}
+  .section{padding:96px 5vw;}
+  #about{padding:96px 5vw;}
+  #login{padding:96px 5vw;}
+  .about-grid{flex-direction:row;}
+  .cards-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+  .steps-grid{grid-template-columns:repeat(4,1fr);}
+  .feat-grid{grid-template-columns:repeat(3,1fr);}
+  .roles-grid{grid-template-columns:repeat(6,1fr);max-width:900px;}
+  .footer-inner{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;align-items:start;}
+  .footer-links-row{display:contents;}
+  .footer-brand-col{display:contents;}
+  .footer-bottom{grid-column:1/-1;display:flex;justify-content:space-between;}
+}
+/* Hide desktop nav on mobile */
+@media(max-width:899px){
+  .nav-desktop{display:none;}
+  .nav-btns .btn-login,.nav-btns .btn-signup{display:none;}
+  .hamburger{display:flex;}
+  .float-card{display:none;}
+}
+
+/* ══ MOBILE RESPONSIVE ══ */
+@media(max-width:768px){
+  .sidebar{display:none !important;}
+  .main{margin-left:0 !important;}
+  .content{padding:14px 14px 90px !important;}
+  .topbar{padding:0 14px !important;height:52px !important;}
+  .tb-search,.tb-date{display:none !important;}
+  .stats-row,.rev-cards-row,.kpi-row{grid-template-columns:repeat(2,1fr) !important;}
+  .two-col,.tracker-layout,.profile-layout,.analytics-layout,.home-layout,.staff-layout,.settings-layout,.billing-layout,.alerts-layout,.overview-layout{grid-template-columns:1fr !important;}
+  .three-col,.clinic-grid{grid-template-columns:1fr !important;}
+  .qa-grid,.quick-grid{grid-template-columns:repeat(2,1fr) !important;}
+  .history-grid,.rev-cards,.kpi-grid{grid-template-columns:1fr !important;}
+  .right-panel,.add-staff-panel{display:none !important;}
+  .mobile-nav{display:none;display:flex !important;}
+}
+.mobile-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid #E8F5F2;
+  padding:8px 0 20px;
+  grid-template-columns:repeat(0,1fr);
+  box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+  z-index:200;
+}
+.mn-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 2px;}
+.mn-icon{font-size:1.2rem;}
+.mn-label{font-size:.5rem;font-weight:700;color:#7A9E98;}
+.mn-item.active .mn-label{color:#00C9A7;}
+.mn-item.active .mn-icon{filter:drop-shadow(0 0 3px rgba(0,201,167,.5));}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav id="navbar">
+  <div class="logo">HAL<span>SAA</span></div>
+  <div class="nav-desktop">
+    <a href="#home" class="active">Home</a>
+    <a href="#discover">Discover</a>
+    <a href="#features">Features</a>
+    <a href="#about">About</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <div class="nav-btns">
+    <button class="btn-login" onclick="document.getElementById('login').scrollIntoView({behavior:'smooth'})">Login</button>
+    <button class="btn-signup" onclick="document.getElementById('login').scrollIntoView({behavior:'smooth'})">Sign Up →</button>
+    <button class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mob-menu" id="mobMenu">
+  <a href="#home" onclick="closeMenu()">Home</a>
+  <a href="#discover" onclick="closeMenu()">Discover</a>
+  <a href="#features" onclick="closeMenu()">Features</a>
+  <a href="#about" onclick="closeMenu()">About</a>
+  <a href="#pricing" onclick="closeMenu()">Pricing</a>
+  <div class="mob-btns">
+    <button style="border:1.5px solid rgba(0,201,167,.2);background:transparent;color:#00C9A7;border-radius:10px;" onclick="closeMenu()">Login</button>
+    <button style="border:none;background:linear-gradient(135deg,#00C9A7,#00A88D);color:#fff;border-radius:10px;" onclick="closeMenu()">Sign Up</button>
+  </div>
+</div>
+
+<!-- ══ HERO ══ -->
+<section id="home">
+  <div class="hero-pattern"></div>
+  <div class="blob1"></div>
+  <div class="blob2"></div>
+  <div class="float-card fc1 float">
+    <div class="fc-icon">🎫</div>
+    <div><div class="fc-title">Token T-019 Confirmed</div><div class="fc-sub">3 ahead · ~12 min wait</div></div>
+  </div>
+  <div class="float-card fc2 float">
+    <div class="fc-icon">✅</div>
+    <div><div class="fc-title">Booking Confirmed!</div><div class="fc-sub">WhatsApp sent · ₹10 paid</div></div>
+  </div>
+  <div class="hero-pill fade-up"><div class="live-dot"></div>India's First Clinic Queue Platform for Tier 2 Cities</div>
+  <h1 class="hero-h1 fade-up">Skip the Queue.<br/><span>Not the Doctor.</span></h1>
+  <p class="hero-sub fade-up">Book your clinic token in 30 seconds, track the live queue from home, and walk in only when it's your turn.</p>
+  <div class="hero-ctas fade-up">
+    <button class="cta-gold" onclick="document.getElementById('discover').scrollIntoView({behavior:'smooth'})">📱 Book Token Now</button>
+    <button class="cta-ghost" onclick="document.getElementById('login').scrollIntoView({behavior:'smooth'})">🏥 Register Clinic</button>
+    <button class="cta-ghost" onclick="document.getElementById('login').scrollIntoView({behavior:'smooth'})">🧪 Register Lab</button>
+  </div>
+  <div class="hero-stats fade-up">
+    <div class="hs"><div class="hs-v">₹10</div><div class="hs-l">Per Booking</div></div>
+    <div class="hs"><div class="hs-v">2,000+</div><div class="hs-l">Target Clinics</div></div>
+    <div class="hs"><div class="hs-v">0 min</div><div class="hs-l">Queue Wait</div></div>
+    <div class="hs"><div class="hs-v">Live</div><div class="hs-l">Real-time</div></div>
+  </div>
+  <div class="scroll-hint"><div class="chevron"></div>SCROLL</div>
+</section>
+
+<!-- ══ DISCOVER ══ -->
+<section id="discover" class="section">
+  <div class="sec-inner">
+    <div class="sec-center reveal">
+      <div class="sec-tag">🔍 Discover</div>
+      <h2 class="sec-h2">Find <span>Clinics & Labs</span> Near You</h2>
+      <p class="sec-sub">Search by name, doctor, location, or specialization. Book in one tap.</p>
+    </div>
+    <div class="search-bar reveal">
+      <span style="color:#7A9E98;">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search clinic, doctor, location..." oninput="filterCards()"/>
+      <button class="search-btn">Search</button>
+    </div>
+    <div class="filters reveal">
+      <button class="chip active" onclick="setFilter('all',this)">All</button>
+      <button class="chip" onclick="setFilter('clinic',this)">🏥 Clinics</button>
+      <button class="chip" onclick="setFilter('lab',this)">🧪 Labs</button>
+      <button class="chip" onclick="setFilter('general',this)">General Medicine</button>
+      <button class="chip" onclick="setFilter('gynaec',this)">Gynaecology</button>
+      <button class="chip" onclick="setFilter('dental',this)">Dental</button>
+    </div>
+    <div class="cards-grid" id="cardsGrid">
+      <div class="clinic-card reveal" data-type="clinic" data-spec="general">
+        <div class="card-top">
+          <div class="card-icon" style="background:#E8FAF7;">🏥</div>
+          <div><div class="card-name">Sri Sai Hospital</div><div class="card-addr">📍 Hanamkonda</div>
+          <div class="card-tags"><span class="ctag" style="background:#E8FAF7;color:#00A88D;">General Medicine</span><span class="ctag" style="background:#FFF5E6;color:#E09020;">Gynaecology</span><span class="ctag" style="background:rgba(14,166,106,.1);color:#0EA66A;">● Open</span></div></div>
+        </div>
+        <div class="card-qr-row">
+          <div class="qr-wrap"><svg width="48" height="48" viewBox="0 0 21 21"><rect width="21" height="21" fill="white"/><rect x="1" y="1" width="7" height="7" fill="none" stroke="#00C9A7" stroke-width=".8"/><rect x="3" y="3" width="3" height="3" fill="#00C9A7"/><rect x="13" y="1" width="7" height="7" fill="none" stroke="#00C9A7" stroke-width=".8"/><rect x="15" y="3" width="3" height="3" fill="#00C9A7"/><rect x="1" y="13" width="7" height="7" fill="none" stroke="#00C9A7" stroke-width=".8"/><rect x="3" y="15" width="3" height="3" fill="#00C9A7"/><rect x="9" y="9" width="2" height="2" fill="#00C9A7"/><rect x="12" y="10" width="3" height="1" fill="#00C9A7"/><rect x="14" y="12" width="1" height="3" fill="#00C9A7"/></svg></div>
+          <div><div class="card-meta-item">👨‍⚕️ <b style="color:#0D2B26;">Dr. Ramesh Kumar</b> — MBBS, MD</div><div class="card-meta-item">👩‍⚕️ <b style="color:#0D2B26;">Dr. Priya Sharma</b> — Gynaecology</div><div class="card-meta-item">⏱️ <b style="color:#0D2B26;">~25 min</b> · 14 waiting</div></div>
+        </div>
+        <div class="card-footer"><button class="btn-book" style="background:linear-gradient(135deg,#00C9A7,#00A88D);" onclick="window.location.href='halsaa-patient-dashboard.html'">📱 Book Token — ₹10</button><button class="btn-details">Details</button></div>
+      </div>
+      <div class="clinic-card reveal" data-type="lab" data-spec="lab">
+        <div class="card-top">
+          <div class="card-icon" style="background:#FFF5E6;">🧪</div>
+          <div><div class="card-name">Vijaya Diagnostics</div><div class="card-addr">📍 Kazipet</div>
+          <div class="card-tags"><span class="ctag" style="background:#FFF5E6;color:#E09020;">Blood Tests</span><span class="ctag" style="background:#FFF5E6;color:#E09020;">X-Ray</span><span class="ctag" style="background:rgba(14,166,106,.1);color:#0EA66A;">● Open</span></div></div>
+        </div>
+        <div class="card-qr-row">
+          <div class="qr-wrap"><svg width="48" height="48" viewBox="0 0 21 21"><rect width="21" height="21" fill="white"/><rect x="1" y="1" width="7" height="7" fill="none" stroke="#FFB347" stroke-width=".8"/><rect x="3" y="3" width="3" height="3" fill="#FFB347"/><rect x="13" y="1" width="7" height="7" fill="none" stroke="#FFB347" stroke-width=".8"/><rect x="15" y="3" width="3" height="3" fill="#FFB347"/><rect x="1" y="13" width="7" height="7" fill="none" stroke="#FFB347" stroke-width=".8"/><rect x="3" y="15" width="3" height="3" fill="#FFB347"/><rect x="9" y="9" width="3" height="1" fill="#FFB347"/><rect x="13" y="10" width="2" height="2" fill="#FFB347"/></svg></div>
+          <div><div class="card-meta-item">🧬 <b style="color:#0D2B26;">Suresh Yadav</b> — DMLT</div><div class="card-meta-item">🕐 Reports in <b style="color:#0D2B26;">2-4 hours</b></div><div class="card-meta-item">📲 <b style="color:#0D2B26;">WhatsApp</b> delivery</div></div>
+        </div>
+        <div class="card-footer"><button class="btn-book" style="background:linear-gradient(135deg,#FFB347,#E09020);" onclick="window.location.href='halsaa-patient-dashboard.html'">🧪 Book Test — ₹10</button><button class="btn-details">Details</button></div>
+      </div>
+      <div class="clinic-card reveal" data-type="clinic" data-spec="dental">
+        <div class="card-top">
+          <div class="card-icon" style="background:#F0F0FF;">🦷</div>
+          <div><div class="card-name">City Dental Care</div><div class="card-addr">📍 Karimnagar</div>
+          <div class="card-tags"><span class="ctag" style="background:#F0F0FF;color:#6366F1;">Dental</span><span class="ctag" style="background:#F0F0FF;color:#6366F1;">Orthodontics</span><span class="ctag" style="background:rgba(240,82,82,.1);color:#F05252;">● Closed</span></div></div>
+        </div>
+        <div class="card-qr-row">
+          <div class="qr-wrap"><svg width="48" height="48" viewBox="0 0 21 21"><rect width="21" height="21" fill="white"/><rect x="1" y="1" width="7" height="7" fill="none" stroke="#6366F1" stroke-width=".8"/><rect x="3" y="3" width="3" height="3" fill="#6366F1"/><rect x="13" y="1" width="7" height="7" fill="none" stroke="#6366F1" stroke-width=".8"/><rect x="15" y="3" width="3" height="3" fill="#6366F1"/><rect x="1" y="13" width="7" height="7" fill="none" stroke="#6366F1" stroke-width=".8"/><rect x="3" y="15" width="3" height="3" fill="#6366F1"/><rect x="9" y="9" width="3" height="1" fill="#6366F1"/></svg></div>
+          <div><div class="card-meta-item">👨‍⚕️ <b style="color:#0D2B26;">Dr. Arun Reddy</b> — BDS, MDS</div><div class="card-meta-item">🕐 Opens <b style="color:#0D2B26;">Tomorrow 9 AM</b></div></div>
+        </div>
+        <div class="card-footer"><button class="btn-book" style="background:linear-gradient(135deg,#6366F1,#4F46E5);" onclick="window.location.href='halsaa-patient-dashboard.html'">📅 Pre-book Token</button><button class="btn-details">Details</button></div>
+      </div>
+      <div class="clinic-card reveal" data-type="clinic" data-spec="gynaec">
+        <div class="card-top">
+          <div class="card-icon" style="background:#FFF0F5;">👩‍⚕️</div>
+          <div><div class="card-name">Nirmala Women's Clinic</div><div class="card-addr">📍 Nizamabad</div>
+          <div class="card-tags"><span class="ctag" style="background:#FFF0F5;color:#E91E8C;">Gynaecology</span><span class="ctag" style="background:#FFF0F5;color:#E91E8C;">Maternity</span><span class="ctag" style="background:rgba(14,166,106,.1);color:#0EA66A;">● Open</span></div></div>
+        </div>
+        <div class="card-qr-row">
+          <div class="qr-wrap"><svg width="48" height="48" viewBox="0 0 21 21"><rect width="21" height="21" fill="white"/><rect x="1" y="1" width="7" height="7" fill="none" stroke="#E91E8C" stroke-width=".8"/><rect x="3" y="3" width="3" height="3" fill="#E91E8C"/><rect x="13" y="1" width="7" height="7" fill="none" stroke="#E91E8C" stroke-width=".8"/><rect x="15" y="3" width="3" height="3" fill="#E91E8C"/><rect x="1" y="13" width="7" height="7" fill="none" stroke="#E91E8C" stroke-width=".8"/><rect x="3" y="15" width="3" height="3" fill="#E91E8C"/><rect x="10" y="9" width="2" height="2" fill="#E91E8C"/></svg></div>
+          <div><div class="card-meta-item">👩‍⚕️ <b style="color:#0D2B26;">Dr. Sujatha Rao</b> — MBBS, MS</div><div class="card-meta-item">⏱️ <b style="color:#0D2B26;">~15 min</b> · 8 waiting</div></div>
+        </div>
+        <div class="card-footer"><button class="btn-book" style="background:linear-gradient(135deg,#E91E8C,#C2185B);" onclick="window.location.href='halsaa-patient-dashboard.html'">📱 Book Token — ₹10</button><button class="btn-details">Details</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ══ -->
+<section id="features" class="section" style="background:#fff;">
+  <div class="sec-inner">
+    <div class="sec-center reveal">
+      <div class="sec-tag">⚡ How It Works</div>
+      <h2 class="sec-h2">Done in <span>4 Simple Steps</span></h2>
+      <p class="sec-sub">Book, track, and walk in. No phone calls, no waiting rooms.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card reveal"><div class="step-num">01</div><div class="step-icon" style="background:#E8FAF7;">🏥</div><div class="step-title">Choose a Clinic</div><div class="step-desc">Search by location, doctor, or specialization. View real-time queue status.</div></div>
+      <div class="step-card reveal"><div class="step-num">02</div><div class="step-icon" style="background:#FFF5E6;">💳</div><div class="step-title">Pay ₹10 Online</div><div class="step-desc">UPI, card, or net banking. Token confirmed instantly on WhatsApp.</div></div>
+      <div class="step-card reveal"><div class="step-num">03</div><div class="step-icon" style="background:#E8FAF7;">📍</div><div class="step-title">Track From Home</div><div class="step-desc">Watch the live queue on your phone. Get notified when you're next.</div></div>
+      <div class="step-card reveal"><div class="step-num">04</div><div class="step-icon" style="background:#FFF5E6;">🎉</div><div class="step-title">Zero Wait Time</div><div class="step-desc">Walk in only when it's your turn. Lab reports on WhatsApp.</div></div>
+    </div>
+    <div class="feat-grid" style="margin-top:28px;">
+      <div class="feat-item reveal"><div class="feat-icon" style="background:#E8FAF7;">📍</div><div><div class="feat-title">Live Queue Tracking</div><div class="feat-desc">Real-time updates under 300ms. TV display mode for waiting rooms.</div></div></div>
+      <div class="feat-item reveal"><div class="feat-icon" style="background:#FFF5E6;">🔊</div><div><div class="feat-title">Voice Announcements</div><div class="feat-desc">Auto token calling in regional languages.</div></div></div>
+      <div class="feat-item reveal"><div class="feat-icon" style="background:#E8FAF7;">📲</div><div><div class="feat-title">WhatsApp Alerts</div><div class="feat-desc">Token, queue updates, and lab reports — all on WhatsApp.</div></div></div>
+      <div class="feat-item reveal"><div class="feat-icon" style="background:#FFF5E6;">🧪</div><div><div class="feat-title">Lab Integration</div><div class="feat-desc">Prescription to lab order to report — fully automated.</div></div></div>
+      <div class="feat-item reveal"><div class="feat-icon" style="background:#E8FAF7;">📊</div><div><div class="feat-title">Analytics Dashboard</div><div class="feat-desc">Revenue, patients, no-show rate at a glance.</div></div></div>
+      <div class="feat-item reveal"><div class="feat-icon" style="background:#FFF5E6;">💳</div><div><div class="feat-title">Razorpay Payments</div><div class="feat-desc">UPI, card, net banking with auto GST receipts.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ABOUT ══ -->
+<section id="about">
+  <div class="sec-inner">
+    <div class="about-grid">
+      <div class="reveal">
+        <div class="about-tag">🏢 About Us</div>
+        <h2 class="about-h2">Medhara <span>Innovations</span></h2>
+        <p class="about-sub">Built with a passion for transforming healthcare access in underserved cities. HALSAA is our flagship product — designed from the ground up for Tier 2 India.</p>
+        <div class="about-card"><div class="about-card-icon" style="background:rgba(0,201,167,.2);">🎯</div><div><div class="about-card-title">Our Mission</div><div class="about-card-sub">Digitize clinic queues across Tier 2 cities in India</div></div></div>
+        <div class="about-card"><div class="about-card-icon" style="background:rgba(255,179,71,.2);">🌍</div><div><div class="about-card-title">Target Market</div><div class="about-card-sub">Tier 2 & 3 cities — Andhra Pradesh & Telangana</div></div></div>
+        <div class="about-card"><div class="about-card-icon" style="background:rgba(0,201,167,.2);">💡</div><div><div class="about-card-title">HALSAA</div><div class="about-card-sub">A sub-brand of Medhara Innovations Pvt Ltd</div></div></div>
+      </div>
+      <div class="stats-right reveal">
+        <div class="stat-box"><div class="stat-val">2,000+</div><div class="stat-lbl">Target Clinics</div></div>
+        <div class="stat-row">
+          <div class="stat-box"><div class="stat-val" style="font-size:1.5rem;">1L+</div><div class="stat-lbl">Patients/day goal</div></div>
+          <div class="stat-box"><div class="stat-val" style="font-size:1.5rem;">₹15</div><div class="stat-lbl">Per booking</div></div>
+        </div>
+        <div class="tagline-box">
+          <div style="font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,179,71,.65);margin-bottom:8px;">Our Tagline</div>
+          <div style="font-size:1.05rem;font-weight:800;color:#FFB347;line-height:1.4;">"Book in HALSAA, Do Jalsaa" 🎉</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRICING ══ -->
+<section id="pricing" class="section" style="background:#F7FFFE;">
+  <div class="sec-inner">
+    <div class="sec-center reveal">
+      <div class="sec-tag">💰 Pricing</div>
+      <h2 class="sec-h2">Simple & <span>Transparent</span></h2>
+      <p class="sec-sub">No hidden charges. Pay only for what you use.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card reveal">
+        <div class="price-who">👤 Patient</div>
+        <div class="price-amt"><sup>₹</sup>10</div>
+        <div class="price-period">per booking · one time fee</div>
+        <div class="price-hr"></div>
+        <ul class="price-list">
+          <li>Token booking confirmation</li>
+          <li>Live queue tracking</li>
+          <li>WhatsApp + SMS alerts</li>
+          <li>Digital prescription access</li>
+          <li>Lab report on WhatsApp</li>
+        </ul>
+        <button class="btn-outline" onclick="document.getElementById('login').scrollIntoView({behavior:'smooth'})">Book Token →</button>
+      </div>
+      <div class="price-card featured reveal">
+        <div class="price-badge">Best Value</div>
+        <div class="price-who">🏥 Clinic / Lab</div>
+        <div class="price-amt"><sup>₹</sup>5</div>
+        <div class="price-period">per patient served · monthly invoice</div>
+        <div class="price-hr"></div>
+        <ul class="price-list">
+          <li>Complete queue management</li>
+          <li>All role dashboards included</li>
+          <li>TV Display mode</li>
+          <li>Voice announcements</li>
+          <li>WhatsApp daily summary</li>
+          <li>Analytics & revenue reports</li>
+          <li class="free">First 3 months FREE 🎁</li>
+        </ul>
+        <button class="btn-fill" onclick="document.getElementById('login').scrollIntoView({behavior:'smooth'})">Start Free →</button>
+      </div>
+    </div>
+    <div class="total-note reveal">💡 ₹10 + ₹5 = <strong>₹15 HALSAA earns</strong> per booking</div>
+  </div>
+</section>
+
+<!-- ══ LOGIN ══ -->
+<section id="login">
+  <div class="login-tag">🔑 Get Started</div>
+  <h2 class="login-h2">Select Your Role</h2>
+  <p class="login-sub">Each role has a dedicated dashboard built for your workflow.</p>
+  <div class="roles-grid">
+    <a class="role-card" href="halsaa-patient-dashboard.html"><span class="role-icon">👤</span><div class="role-title">Patient</div><div class="role-sub">Book token, track queue</div><div class="role-arrow">Enter →</div></a>
+    <a class="role-card" href="halsaa-receptionist-dashboard.html"><span class="role-icon">💁</span><div class="role-title">Receptionist</div><div class="role-sub">Manage queue & walk-ins</div><div class="role-arrow">Enter →</div></a>
+    <a class="role-card" href="halsaa-doctor-dashboard.html"><span class="role-icon">👨‍⚕️</span><div class="role-title">Doctor</div><div class="role-sub">View patients & consult</div><div class="role-arrow">Enter →</div></a>
+    <a class="role-card" href="halsaa-lab-technician-dashboard.html"><span class="role-icon">🧪</span><div class="role-title">Lab Technician</div><div class="role-sub">Manage test pipeline</div><div class="role-arrow">Enter →</div></a>
+    <a class="role-card" href="halsaa-admin-dashboard.html"><span class="role-icon">🏥</span><div class="role-title">Clinic Admin</div><div class="role-sub">Manage clinic & staff</div><div class="role-arrow">Enter →</div></a>
+    <a class="role-card" href="halsaa-superadmin-dashboard.html"><span class="role-icon">👑</span><div class="role-title">Super Admin</div><div class="role-sub">Platform overview</div><div class="role-arrow">Enter →</div></a>
+  </div>
+  <p class="login-note">* Demo version — Real OTP login coming soon</p>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">HAL<span>SAA</span></div>
+      <div class="footer-tagline">Digitizing clinic queues across Tier 2 India.<br/>Book. Track. Walk in.</div>
+      <div class="footer-medhara">A product by <b>Medhara Innovations Pvt Ltd</b></div>
+    </div>
+    <div class="footer-links-row">
+      <div class="footer-col">
+        <div class="footer-col-title">Product</div>
+        <a href="#discover">Discover</a>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#login">Login</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Company</div>
+        <a href="#about">About Us</a>
+        <a href="#login">Register Clinic</a>
+        <a href="#login">Register Lab</a>
+        <a href="#about">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 HALSAA · Medhara Innovations Pvt Ltd · All rights reserved</div>
+      <div class="footer-copy">Tier 2 India · Healthcare · Queue Management</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Nav scroll + active section
+window.addEventListener('scroll',()=>{
+  const nav=document.getElementById('navbar');
+  nav.classList.toggle('scrolled',window.scrollY>30);
+  const sections=['home','discover','features','about','pricing','login'];
+  let current='home';
+  sections.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&window.scrollY>=el.offsetTop-90) current=id;
+  });
+  document.querySelectorAll('.nav-desktop a').forEach(a=>{
+    a.classList.toggle('active',a.getAttribute('href')==='#'+current);
+  });
+});
+
+// Mobile menu
+function toggleMenu(){document.getElementById('mobMenu').classList.toggle('open');}
+function closeMenu(){document.getElementById('mobMenu').classList.remove('open');}
+
+// Filter
+let activeFilter='all';
+function setFilter(f,btn){
+  activeFilter=f;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  filterCards();
+}
+function filterCards(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('.clinic-card').forEach(card=>{
+    const mf=activeFilter==='all'||card.dataset.type===activeFilter||card.dataset.spec===activeFilter;
+    const mq=!q||card.innerText.toLowerCase().includes(q);
+    card.style.display=(mf&&mq)?'':'none';
+  });
+}
+
+// Scroll reveal
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+
+<nav class="mobile-nav" id="mobileNav">
+</nav>
+</body>
+</html>
